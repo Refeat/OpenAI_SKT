@@ -1,50 +1,50 @@
-from abc import ABC, abstractmethod
+from embedchain.embedchain import EmbedChain
+from typing import List, Dict
 
-class Data(ABC):
-    def __init__(self) -> None:
+class Data:
+    def __init__(self, hash_id:str, parsed_data:Dict) -> None:
+        self.hash = hash_id
         self.data_path = None
-        self.data = None
-        self.embedding = None
-        self.type = None
+        self.data_type = None
+        ids = parsed_data['ids']
+        self.embeddings = parsed_data['embeddings']
+        documents = parsed_data['documents']
 
-    def init_data(self, type:str=None, data_path:str=None):
-        if type is not None:
-            self.type = type
-        else:
-            raise ValueError("type must be specified")
-        if data_path is not None:
-            self.data_path = data_path
-        else:
-            raise ValueError("data_path must be specified")
-        self.parse_data()
+        self.chunk_list = []
+        for i, id_db in enumerate(ids):
+            self.chunk_list.append(Chunk(id_db, documents[i], self.embeddings[i]))
+        
+        if ids:
+            self.data_path = parsed_data['metadatas'][0]['url']
+            self.data_type = parsed_data['metadatas'][0]['data_type']
+    
+    def __str__(self) -> str:
+        return str(self.data_type) + ' / ' + str(self.data_path) + ' hash : [' + self.hash + ']'
+    
+    def __repr__(self) -> str:
+        return str(self)
 
-    def load_data(self):
-        pass
+class Chunk:
+    def __init__(self, id_db:str = None, data:str = None, embedding:List[float] = None) -> None:
+        self.id = id_db
+        self.data = data
+        self.embedding = embedding
 
-    def save_data(self):
-        pass
 
-    @abstractmethod
-    def parse_data(self):
-        pass
+# embedchain 사용하면 필요없을 것 같음
+# class WebSite(Data):
+#     def __init__(self) -> None:
+#         super().__init__()
 
-    @abstractmethod
-    async def async_get_embedding(self):
-        pass
+# class Pdf:
+#     pass
 
-class WebSite(Data):
-    def __init__(self) -> None:
-        super().__init__()
+# class Doc:
+#     pass
 
-class Pdf:
-    pass
+# class Notion:
+#     pass
 
-class Doc:
-    pass
-
-class Notion:
-    pass
-
-class Youtube:
-    pass
+# class Youtube:
+#     pass
 
