@@ -1,5 +1,5 @@
 {
-    "purpose": "",
-    "keywords": "",
-    "database_path": ""
+    "_type": "prompt",
+    "input_variables": ["purpose", "keywords", "database"],
+    "template_path": "../openai_skt/templates/draft_prompt_template.txt"
 }
