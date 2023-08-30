@@ -1,2 +1,3 @@
 embedchain
 langchain
+tiktoken

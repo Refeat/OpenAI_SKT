@@ -4,39 +4,32 @@ import asyncio
 from typing import List
 from database.data import Data
 
+embed_chain = EmbedChain(config=AppConfig())
+
 class DataBase:
+    # db = DataBase([(path1, type1), (path2, type2), ...]) 으로 선언
+    # db[x][y] <- db의 x번째 data, 그 데이터의 y번째 chunk 반환
     def __init__(self, files:List[tuple]):
-        self.embed_chain = EmbedChain(config=AppConfig())
+        self.embed_chain = embed_chain
         self.data = []
         asyncio.run(self.add_files(files))
-
-    # init 방식이 통합됨에 따라 굳이 classmethod 사용할 이유가 없음
-    # @classmethod
-    # def init_database(cls, files:List[tuple]):
-    #     # files : list of tuple [(file_path, data_type), (file_path, data_type), ...]
-    #     # 각 chunk마다 이전에 한 번 embedding을 만든 적 있는 데이터라면 자동으로 db에서 로딩해옴
-    #     database =  cls()
-    #     database.embed_chain = EmbedChain(config=AppConfig())
-    #     database.data = []
-    #     asyncio.run(database.add_files(files))
-        
-    #     return database
-
-    # init_database가 자동으로 save, load를 하므로 불필요할듯
-    # @classmethod
-    # def load_database(cls, database_path:str):
-    #     # asyncio.run(init_database(files))) 로 실행해야함!
-    #     database = cls()
-    #     database.embed_chain = EmbedChain(config=AppConfig())
-    #     # TODO:file 로드
-    #     return database
+        self.token_num = 0
+        for data in self.data:
+            self.token_num += data.token_num
+        self.cost = self.token_num * 0.0001 * 0.0002
 
     def __str__(self) -> str:
         ret = 'DataBase{\n'
         for i, data in enumerate(self.data):
-            ret += '[' + str(i) + '] ' + str(data) + '\n'
-        ret += '}'
+            ret += '\t[' + str(i) + '] ' + str(data) + '\n'
+        ret += '}\ntotal tokens : ' + str(self.token_num) + '\ncost : ' + str(self.cost)
         return ret
+
+    def __getitem__(self, idx):
+        return self.data[idx]
+
+    def __len__(self):
+        return len(self.data)
 
     def __repr__(self) -> str:
         return str(self)
