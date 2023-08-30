@@ -2,7 +2,7 @@ from embedchain.embedchain import EmbedChain
 from embedchain.config import AppConfig
 import asyncio
 from typing import List
-from data import Data
+from database.data import Data
 
 class DataBase:
     def __init__(self, files:List[tuple]):
@@ -32,9 +32,9 @@ class DataBase:
     #     return database
 
     def __str__(self) -> str:
-        ret = 'DataBase{'
+        ret = 'DataBase{\n'
         for i, data in enumerate(self.data):
-            ret += '[' + i + '] ' + str(data) + '\n'
+            ret += '[' + str(i) + '] ' + str(data) + '\n'
         ret += '}'
         return ret
 
