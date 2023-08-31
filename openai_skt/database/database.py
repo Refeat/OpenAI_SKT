@@ -33,41 +33,6 @@ class DataBase:
         for data in self.data.values():
             self.token_num += data.token_num
         self.cost = self.token_num * 0.0001 * 0.0002
-
-
-    def __str__(self) -> str:
-        ret = 'DataBase{\n'
-        for i, data in enumerate(self.data):
-            ret += '[' + str(i) + '] ' + str(data) + '\n'
-        ret += '}'
-        return ret
-    
-    def ids_2_chunk(self, ids:List[str]):
-        # input list of id [hash1, hash2, ...] (this should be hash of 'chunk')
-        # output list of data [chunk1, chunk2, ...]
-        return [self.chunks[cur_id] for cur_id in ids]
-
-    def __repr__(self) -> str:
-        return str(self)
-        self.embed_chain = embed_chain
-        self.data = {}
-        self.chunks = {}
-        asyncio.run(self.add_files(files))
-        self.token_num = 0
-        for data in self.data.values():
-            self.token_num += data.token_num
-        self.cost = self.token_num * 0.0001 * 0.0002
-    
-    def query(self, query_list:List[str], top_k:int = 5):
-        # input list of query ex) ['hi', 'hello']
-        # output list of list of chunks zz ex) [[chunk1forquery1, chunk2forquery1, ..], [chunk1forquery2, chunk2forquery2, ...]]
-        result_id_list = self.embed_chain.db.collection.query(query_texts = query_list, n_results=top_k, where={})['ids']
-        return [self.ids_2_chunk(ids) for ids in result_id_list]
-
-    def ids_2_chunk(self, ids:List[str]):
-        # input list of id [hash1, hash2, ...] (this should be hash of 'chunk')
-        # output list of data [chunk1, chunk2, ...]
-        return [self.chunks[cur_id] for cur_id in ids]
     
     def add(self, filepath: str, data_type: str):
         hash_id = self.embed_chain.add(filepath, data_type)
@@ -80,13 +45,24 @@ class DataBase:
         for file in files:
             file_path, data_type = file
             self.add(file_path, data_type)
+
+    async def async_add(self, filepath: str, data_type: str):
+        self.add(filepath, data_type)
     
     async def async_add_files(self, files: List[tuple]):
         data_add_tasks = [self.async_add(file_path, data_type) for (file_path, data_type) in files]
         await asyncio.gather(*data_add_tasks)
-    
-    async def async_add(self, filepath: str, data_type: str):
-        self.add(filepath, data_type)
+
+    def query(self, query_list:List[str], top_k:int = 5):
+        # input list of query ex) ['hi', 'hello']
+        # output list of list of chunks zz ex) [[chunk1forquery1, chunk2forquery1, ..], [chunk1forquery2, chunk2forquery2, ...]]
+        result_id_list = self.embed_chain.db.collection.query(query_texts = query_list, n_results=top_k, where={})['ids']
+        return [self.ids_2_chunk(ids) for ids in result_id_list]
+
+    def ids_2_chunk(self, ids:List[str]):
+        # input list of id [hash1, hash2, ...] (this should be hash of 'chunk')
+        # output list of data [chunk1, chunk2, ...]
+        return [self.chunks[cur_id] for cur_id in ids]
     
     def __str__(self) -> str:
         ret = 'DataBase{\n'
