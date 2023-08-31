@@ -53,10 +53,16 @@ class DataBase:
         data_add_tasks = [self.async_add(file_path, data_type) for (file_path, data_type) in files]
         await asyncio.gather(*data_add_tasks)
 
-    def query(self, query_list:List[str], top_k:int = 5):
+    def query(self, query, top_k:int = 5):
         # input list of query ex) ['hi', 'hello']
         # output list of list of chunks zz ex) [[chunk1forquery1, chunk2forquery1, ..], [chunk1forquery2, chunk2forquery2, ...]]
-        result_id_list = self.embed_chain.db.collection.query(query_texts = query_list, n_results=top_k, where={})['ids']
+        if isinstance(query, str):
+            query = [query]
+        elif isinstance(query, list):
+            pass
+        else:
+            raise TypeError('query should be str or list of str')
+        result_id_list = self.embed_chain.db.collection.query(query_texts = query, n_results=top_k, where={})['ids']
         return [self.ids_2_chunk(ids) for ids in result_id_list]
 
     def ids_2_chunk(self, ids:List[str]):

@@ -16,11 +16,11 @@ class DatabaseTool(BaseTool):
         self.database = database
 
     def search(self, input_dict: dict) -> dict:
-        query = list(input_dict['query']) # It should be a list of queries
-        result = self.database.search(query)
+        query = input_dict['query']
+        result = self.database.query(query)
         return result
     
     async def async_search(self, input_dict: dict) -> dict:
-        query = list(input_dict['query']) # It should be a list of queries
-        result = await self.database.async_search(query)
+        query = input_dict['query']
+        result = self.database.query(query)
         return result
