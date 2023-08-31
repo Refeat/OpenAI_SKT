@@ -19,7 +19,7 @@ class KostatAPI(BaseAPI):
         self.base_url = 'https://kostat.go.kr/'
         self.search_url = self.base_url + 'unifSearch/search.es'
         self.name = 'kostat'
-        self.schema_name_list = ['제목', '날짜', '설명', '링크']
+        self.schema_name_list = ['제목', '날짜', '설명', '링크', 'data_type', 'data_path']
 
     def search(self, query):
         pass
@@ -144,7 +144,9 @@ class KostatAPI(BaseAPI):
                 '제목': title,
                 '날짜': institute_period,
                 '설명': description,
-                '링크': url
+                '링크': url,
+                'data_type': 'web_page',
+                'data_path': url
             })
         return search_results
     

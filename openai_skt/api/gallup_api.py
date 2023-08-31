@@ -17,7 +17,7 @@ class GallupAPI(BaseAPI):
         self.base_url = 'https://www.gallup.co.kr/'
         self.search_url = self.base_url + 'etc/SearchReport.asp'
         self.name = 'gallup'
-        self.schema_name_list = ['번호', '제목', '날짜', '첨부파일', '링크']
+        self.schema_name_list = ['번호', '제목', '날짜', '첨부파일', '링크', 'data_type', 'data_path']
 
     def search(self, query):
         pass
@@ -78,7 +78,9 @@ class GallupAPI(BaseAPI):
                 '제목': title,
                 '날짜': date,
                 '첨부파일': file_link,
-                '링크': url
+                '링크': url,
+                'data_type': 'pdf_file',
+                'data_path': file_link
             }
             search_results.append(result)
 

@@ -1,4 +1,4 @@
 embedchain/
-secrets.ini
+.secrets.ini
 **/__pycache__/
 **/db/

@@ -37,6 +37,15 @@ class Data:
     
     def __repr__(self) -> str:
         return str(self)
+    
+    def to_dict(self):
+        return {
+            'hash': self.hash,
+            'data_path': self.data_path,
+            'data_type': self.data_type,
+            'token_num': self.token_num,
+            'chunks': [chunk.to_dict() for chunk in self.chunks.values()],
+        }
 
 class Chunk:
     def __init__(self, data_path:str = None, data_type:str = None, id_db:str = None, data:str = None, embedding:List[float] = None) -> None:
@@ -53,3 +62,12 @@ class Chunk:
     
     def __repr__(self) -> str:
         return str(self.data_type) + ' | ' + str(self.data_path) + ' | Tokens : ' + str(self.token_num) + ' | Hash : ' + self.id + '\n'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'data': self.data,
+            'data_path': self.data_path,
+            'data_type': self.data_type,
+            'token_num': self.token_num
+        }

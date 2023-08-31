@@ -1,3 +1,4 @@
+import json
 import asyncio
 import nest_asyncio
 from typing import List
@@ -69,6 +70,15 @@ class DataBase:
         # input list of id [hash1, hash2, ...] (this should be hash of 'chunk')
         # output list of data [chunk1, chunk2, ...]
         return [self.chunks[cur_id] for cur_id in ids]
+    
+    def save(self, database_path:str):
+        with open(database_path, 'w', encoding='utf-8') as f:
+            json.dump(self.to_dict(), f, ensure_ascii=False, indent=4)
+
+    def to_dict(self):
+        return {
+            'data': [data.to_dict() for data in self.data.values()],
+        }            
     
     def __str__(self) -> str:
         ret = 'DataBase{\n'

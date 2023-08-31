@@ -1,22 +1,24 @@
 import asyncio
-from openai_skt.api import KostatAPI, GallupAPI, YoutubeAPI
+from api import KostatAPI, GallupAPI, YoutubeAPI
 
 class SearchTool:
     category_api_dict = {
-        'statistics': [KostatAPI()],
+        'all': [KostatAPI(), GallupAPI(), YoutubeAPI()],
+        'statistics': [KostatAPI(), GallupAPI(), YoutubeAPI()],
         # TODO: Add more APIs
     }
     def __init__(self) -> None:
         pass
 
-    def search(self, category, query):
+    def search(self, query, category='all'):
         api_list = self.category_api_dict[category]
         result_dict = {}
         for api in api_list:
             result = api.search(query)
             result_dict[api.name] = result
+        return result_dict
 
-    async def async_search(self, category, query):
+    async def async_search(self, query, category='all'):
         api_list = self.category_api_dict[category]
         result_dict = {}
         
