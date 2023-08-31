@@ -1,2 +1,6 @@
 embedchain
 langchain
+beautifulsoup4
+aiohttp
+lxml
+configparser

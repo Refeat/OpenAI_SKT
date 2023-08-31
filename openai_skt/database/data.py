@@ -29,22 +29,3 @@ class Chunk:
         self.id = id_db
         self.data = data
         self.embedding = embedding
-
-
-# embedchain 사용하면 필요없을 것 같음
-# class WebSite(Data):
-#     def __init__(self) -> None:
-#         super().__init__()
-
-# class Pdf:
-#     pass
-
-# class Doc:
-#     pass
-
-# class Notion:
-#     pass
-
-# class Youtube:
-#     pass
-

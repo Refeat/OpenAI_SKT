@@ -1,35 +1,30 @@
+import asyncio
+import nest_asyncio
+from typing import List
+
 from embedchain.embedchain import EmbedChain
 from embedchain.config import AppConfig
-import asyncio
-from typing import List
+
 from database.data import Data
 
 class DataBase:
     def __init__(self, files:List[tuple]):
         self.embed_chain = EmbedChain(config=AppConfig())
         self.data = []
-        asyncio.run(self.add_files(files))
 
-    # init 방식이 통합됨에 따라 굳이 classmethod 사용할 이유가 없음
-    # @classmethod
-    # def init_database(cls, files:List[tuple]):
-    #     # files : list of tuple [(file_path, data_type), (file_path, data_type), ...]
-    #     # 각 chunk마다 이전에 한 번 embedding을 만든 적 있는 데이터라면 자동으로 db에서 로딩해옴
-    #     database =  cls()
-    #     database.embed_chain = EmbedChain(config=AppConfig())
-    #     database.data = []
-    #     asyncio.run(database.add_files(files))
-        
-    #     return database
+        try:
+            get_ipython
+            is_jupyter = True
+        except NameError:
+            is_jupyter = False
 
-    # init_database가 자동으로 save, load를 하므로 불필요할듯
-    # @classmethod
-    # def load_database(cls, database_path:str):
-    #     # asyncio.run(init_database(files))) 로 실행해야함!
-    #     database = cls()
-    #     database.embed_chain = EmbedChain(config=AppConfig())
-    #     # TODO:file 로드
-    #     return database
+        if is_jupyter:
+            nest_asyncio.apply()
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(self.async_add_files(files))
+        else:
+            asyncio.run(self.async_add_files(files))
+
 
     def __str__(self) -> str:
         ret = 'DataBase{\n'
@@ -41,12 +36,20 @@ class DataBase:
     def __repr__(self) -> str:
         return str(self)
     
-    async def add_files(self, files: List[tuple]):
-        data_add_tasks = [self.add(file_path, data_type) for (file_path, data_type) in files]
-        await asyncio.gather(*data_add_tasks)
-    
-    async def add(self, filepath: str, data_type: str):
+    def add(self, filepath: str, data_type: str):
         hash_id = self.embed_chain.add(filepath, data_type)
         db_ids = list(self.embed_chain.db.get([], {'hash': hash_id}))
         parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas", "embeddings"])
         self.data.append(Data(hash_id, parsed_data))
+
+    def add_files(self, files: List[tuple]):
+        for file in files:
+            file_path, data_type = file
+            self.add(file_path, data_type)
+    
+    async def async_add_files(self, files: List[tuple]):
+        data_add_tasks = [self.async_add(file_path, data_type) for (file_path, data_type) in files]
+        await asyncio.gather(*data_add_tasks)
+    
+    async def async_add(self, filepath: str, data_type: str):
+        self.add(filepath, data_type)

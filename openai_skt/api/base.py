@@ -16,7 +16,3 @@ class BaseAPI(ABC):
     @abstractmethod
     def parse_result(self, result):
         pass
-
-    @abstractmethod
-    async def async_parse_result(self, result):
-        pass

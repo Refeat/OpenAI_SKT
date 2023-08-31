@@ -10,7 +10,7 @@ from langchain.callbacks.streaming_stdout_final_only import (
 )
 from langchain.schema import AgentAction, AgentFinish, HumanMessage
 
-from tools import DatabaseTool
+from tools.database_tool import DatabaseTool
 
 # Set up a prompt template
 class CustomPromptTemplate(BaseChatPromptTemplate):

@@ -1,11 +1,11 @@
 import json
 from typing import List
 
-from database import DataBase
+from database.database import DataBase
 from models.llm.chain import KeywordsChain, DraftChain
-from draft_generator import DraftGeneratorInstance
-from keywords_generator import KeywordsGeneratorInstance
-from qna_assistant import QnAInstance
+from models.draft_generator import DraftGeneratorInstance
+from models.keywords_generator import KeywordsGeneratorInstance
+from models.qna_assistant import QnAInstance
 
 keywords_chain = KeywordsChain()
 draft_chain = DraftChain()
