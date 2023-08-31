@@ -3,7 +3,7 @@ from typing import List, Dict
 import tiktoken
 
 class Data:
-    def __init__(self, hash_id:str, parsed_data:Dict) -> None:
+    def __init__(self, hash_id:str, parsed_data:Dict, chunks_dict:Dict) -> None:
         self.hash = hash_id
         self.data_path = None
         self.data_type = None
@@ -13,20 +13,24 @@ class Data:
         metadatas = parsed_data['metadatas']
         self.token_num = 0
 
-        self.chunk_list = []
+        self.chunks = {}
         for i, id_db in enumerate(ids):
-            self.chunk_list.append(Chunk(metadatas[i]['url'], metadatas[i]['data_type'], id_db, documents[i], self.embeddings[i]))
-            self.token_num += self.chunk_list[i].token_num
+            self.chunks[id_db] = Chunk(metadatas[i]['url'], metadatas[i]['data_type'], id_db, documents[i], self.embeddings[i])
+            chunks_dict[id_db] = self.chunks[id_db]
+            self.token_num += self.chunks[id_db].token_num
         
         if ids:
             self.data_path = metadatas[0]['url']
             self.data_type = parsed_data['metadatas'][0]['data_type']
     
     def __getitem__(self, idx):
-        return self.chunk_list[idx]
+        if type(idx) is str:
+            return self.chunks[idx]
+        elif type(idx) is int:
+            return self.chunks.values()[idx]
 
     def __len__(self):
-        return len(self.chunk_list)
+        return len(self.chunks)
     
     def __str__(self) -> str:
         return str(self.data_type) + ' | ' + str(self.data_path) + ' | Tokens : ' + str(self.token_num) + ' | hash : [' + self.hash + ']'
@@ -45,7 +49,7 @@ class Chunk:
         self.token_num = len(tokenizer.encode(self.data))
     
     def __str__(self) -> str:
-        return str(self.data_type) + ' | ' + str(self.data_path) + ' | Tokens : ' + str(self.token_num) + ' | Doc : ' + self.data
+        return str(self.data_type) + ' | ' + str(self.data_path) + ' | Tokens : ' + str(self.token_num) + ' | Doc : ' + self.data + '\n'
     
     def __repr__(self) -> str:
-        return str(self)
+        return str(self.data_type) + ' | ' + str(self.data_path) + ' | Tokens : ' + str(self.token_num) + ' | Hash : ' + self.id + '\n'
