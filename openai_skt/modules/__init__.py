@@ -1,3 +1,2 @@
-from .draft import Draft
+from .draft import Draft, DraftPart
 from .project import Project
-from .user import User

@@ -1,12 +1,14 @@
-from api.base import BaseAPI
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from oauth2client.tools import argparser
 import configparser
 
 config = configparser.ConfigParser()
 config.read('../.secrets.ini')
 YOUTUBE_KEY = config['YOUTUBE']['YOUTUBE_API_KEY']
+
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from oauth2client.tools import argparser
+
+from api.base import BaseAPI
 
 class YoutubeAPI(BaseAPI):
     # 유튜브 API
