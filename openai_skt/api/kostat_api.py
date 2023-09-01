@@ -21,17 +21,18 @@ class KostatAPI(BaseAPI):
         self.name = 'kostat'
         self.schema_name_list = ['제목', '날짜', '설명', '링크', 'data_type', 'data_path']
 
-    def search(self, query):
-        return asyncio.run(self.async_search(query))
+    def search(self, query, top_k:int = 5):
+        return asyncio.run(self.async_search(query, top_k))
     
-    async def async_search(self, query):
+    async def async_search(self, query, top_k:int = 5):
         
         data, headers = self.parse_input(query)
 
         async with aiohttp.ClientSession() as session:
             async with session.post(self.search_url, data=data, headers=headers) as response:
                 html_content = await response.text()
-                return self.parse_result(html_content)
+                search_results = self.parse_result(html_content)
+                return search_results[:top_k]
 
     def parse_result(self, result):
         soup = BeautifulSoup(result, 'lxml')
