@@ -27,7 +27,7 @@ class Data:
         if type(idx) is str:
             return self.chunks[idx]
         elif type(idx) is int:
-            return self.chunks.values()[idx]
+            return list(self.chunks.values())[idx]
 
     def __len__(self):
         return len(self.chunks)
