@@ -29,20 +29,19 @@ draft_generator_instance = DraftGeneratorInstance(draft_chain=draft_chain)
 
 search_tool = SearchTool()
 
-class UserInstance:
+class Project:
     save_root_path = f"./user"
     def __init__(self, 
-                user_id, 
-                table_generator_instance, 
-                keywords_generator_instance, 
-                draft_generator_instance, 
+                user_id,
+                table_generator_instance,
+                keywords_generator_instance,
+                draft_generator_instance,
                 search_tool) -> None:
         self.user_id = user_id
         self.purpose = None
         self.table = None
         self.keywords = None
-        self.draft = None
-        self.draft_dict = None
+        self.drafts = None # [draft1, draft2, ...]
 
         self.user_instance_path = None
         self.files = dict() # {'keyword': {'api_name':[{},{}]]}}
@@ -93,12 +92,13 @@ class UserInstance:
         print(f"saved database to {self.database_path}")
 
     def to_dict(self):
+        # TODO: 수정필요
         serialized_draft_dict = {key: [chunk.to_dict() for chunk in chunk_list] 
-                             for key, chunk_list in self.draft_dict.items()}
+                             for key, chunk_list in self.draft.files.items()}
         return {
             "purpose": self.purpose,
             "keywords": self.keywords,
-            "draft": self.draft,
+            "draft": self.drafts,
             "database_path": self.database_path,
             "draft_dict": serialized_draft_dict,
         }
@@ -148,13 +148,13 @@ class UserInstance:
 
     def get_draft(self):
         draft, draft_dict = self.draft_generator_instance.run(purpose=self.purpose, table=self.table, database=self.database)
-        self.draft = draft
+        self.drafts.append(draft)
         self.draft_dict = draft_dict
         return draft
 
     async def async_get_draft(self):
         draft = await self.draft_generator_instance.arun(purpose=self.purpose, table=self.table, database=self.database)
-        self.draft = draft
+        self.drafts.append(draft)
         return draft
 
     def get_answer(self, question:str=None):
@@ -175,14 +175,14 @@ class UserInstance:
 
 
 if __name__ == "__main__":
-    user_instance = UserInstance(
-        user_id="test", 
+    user_instance = Project(
+        user_id="test_1", 
         table_generator_instance=table_generator_instance, 
         keywords_generator_instance=keywords_generator_instance, 
         draft_generator_instance=draft_generator_instance, 
         search_tool=search_tool
     )
-    purpose = user_instance.set_purpose(purpose="전세계적으로 축구가 유명한 스포츠인 이유")
+    purpose = user_instance.set_purpose(purpose="디지털 자산과 비트코인")
     print('purpose: ', purpose)
     table = user_instance.get_table()
     print('table: ', table)

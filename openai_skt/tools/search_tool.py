@@ -3,7 +3,7 @@ from api import KostatAPI, GallupAPI, YoutubeAPI
 
 class SearchTool:
     category_api_dict = {
-        'all': [KostatAPI(), GallupAPI()],
+        'all': [KostatAPI(), GallupAPI(), YoutubeAPI()],
         'statistics': [KostatAPI()],
         # TODO: Add more APIs
     }
