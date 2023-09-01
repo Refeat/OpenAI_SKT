@@ -15,5 +15,18 @@ class KeywordsGeneratorInstance:
         return keywords
     
     def parse_keywords(self, result:str) -> List[str]:
-        keywords = result.split(", ")
+        delimiters = ['\n', ',']
+        lines = result.split(delimiters[0])
+
+        # Then split each line by the subsequent delimiters
+        keywords = []
+        for line in lines:
+            line = line.strip()  # Remove leading and trailing whitespace
+            if line:  # Check ensures no empty strings are included
+                temp = [line]
+                for delimiter in delimiters[1:]:
+                    temp = [element.split(delimiter) for element in temp]
+                    temp = [item.strip() for sublist in temp for item in sublist]
+                keywords.extend(temp)
+
         return keywords

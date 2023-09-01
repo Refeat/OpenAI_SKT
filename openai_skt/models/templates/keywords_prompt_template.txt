@@ -1,3 +1,18 @@
-주제: {purpose}
-목차: {table}
-키워드: 
+I want you to generate search query to find evidence for writing an article.
+I will give you the table of contents with purpose of the article, and I will need you to generate search query in keyword.
+Each keyword is used to retrieve data from the internet.
+Only say the keyword queries. But if there is none, say nothing, and don't give me an explanation.
+Generate no more than three keyword queries.
+Answer in Korean.
+
+purpose for the article:
+===
+{purpose}
+===
+
+table of contents:
+===
+{table}
+===
+
+keyword quries:

@@ -45,6 +45,7 @@ class DataBase:
         db_ids = list(self.embed_chain.db.get([], {'hash': hash_id}))
         parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas", "embeddings"])
         self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
+        self.update_where()
         
 
     def add_files(self, files: List[tuple]):
@@ -63,13 +64,17 @@ class DataBase:
         # input list of query ex) ['hi', 'hello']
         # output list of list of chunks zz ex) [[chunk1forquery1, chunk2forquery1, ..], [chunk1forquery2, chunk2forquery2, ...]]
         if isinstance(query, str):
-            query = [query]
+            query_texts = [query]
         elif isinstance(query, list):
-            pass
+            query_texts = query
         else:
             raise TypeError('query should be str or list of str')
-        result_id_list = self.embed_chain.db.collection.query(query_texts = query, n_results=top_k, where=self.where)['ids']
-        return [self.ids_2_chunk(ids) for ids in result_id_list]
+        result_id_list = self.embed_chain.db.collection.query(query_texts = query_texts, n_results=top_k, where=self.where)['ids']
+        results = [self.ids_2_chunk(ids) for ids in result_id_list]
+        if isinstance(query, str):
+            return results[0]
+        elif isinstance(query, list):
+            return results
 
     def ids_2_chunk(self, ids:List[str]):
         # input list of id [hash1, hash2, ...] (this should be hash of 'chunk')
@@ -77,7 +82,9 @@ class DataBase:
         return [self.chunks[cur_id] for cur_id in ids]
 
     def update_where(self):
-        if len(self.data.keys()) == 1:
+        if len(self.data.keys()) == 0:
+            self.where = {}
+        elif len(self.data.keys()) == 1:
             self.where = {'hash': self[0].hash}
         else:
             self.where = {
