@@ -7,3 +7,4 @@ configparser
 tiktoken
 google-api-python-client
 oauth2client
+nest_asyncio
