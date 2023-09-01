@@ -11,6 +11,7 @@ import asyncio
 from typing import List
 
 from database.database import DataBase
+from utils import time_logger, async_time_logger
 
 class Project:
     save_root_path = f"./user"
@@ -59,6 +60,7 @@ class Project:
         self.database_path = user_instance["database_path"]
         self.database = DataBase(database_path=self.database_path)
 
+    @time_logger
     def save_instance(self):
         user_root_path = os.path.join(self.save_root_path, f"{self.user_id}")
         os.makedirs(user_root_path, exist_ok=True)
@@ -70,22 +72,26 @@ class Project:
             json.dump(self.to_dict(), f, ensure_ascii=False, indent=4)
         print(f"saved user instance to {self.user_instance_path}")
 
+        # save drafts
+        for i, draft in enumerate(self.drafts):
+            draft_path = os.path.join(user_root_path, f"draft_{i}.md")
+            with open(draft_path, "w", encoding='utf-8') as f:
+                f.write(draft.text)
+            print(f"saved draft to {draft_path}")
+
         # save database
         self.database.save(self.database_path)
         print(f"saved database to {self.database_path}")
 
     def to_dict(self):
-        # TODO: 수정필요
-        serialized_draft_dict = {key: [chunk.to_dict() for chunk in chunk_list] 
-                             for key, chunk_list in self.draft.files.items()}
         return {
             "purpose": self.purpose,
             "keywords": self.keywords,
-            "draft": self.drafts,
             "database_path": self.database_path,
-            "draft_dict": serialized_draft_dict,
+            "draft": [draft.to_dict() for draft in self.drafts]
         }
     
+    @time_logger
     def parse_files_to_embedchain(self):
         # {'keyword': {'api_name':[{},{}]]}}
         files = []
@@ -96,44 +102,69 @@ class Project:
                     files.append((data_path, data_type))
                     self.database.add(data_path, data_type)
         return self.database
+
+    @async_time_logger
+    async def async_parse_files_to_embedchain(self):
+        # {'keyword': {'api_name':[{},{}]]}}
+        async def handle_file(file):
+            data_path, data_type = file['data_path'], file['data_type']
+            await self.database.async_add(data_path, data_type)
+            return (data_path, data_type)
+
+        tasks = [handle_file(file) for files_of_keyword in self.files.values() for files_of_api in files_of_keyword.values() for file in files_of_api]
+        files = await asyncio.gather(*tasks)
+
+        return self.database
+
     
+    @time_logger
     def search_keywords(self):
         for keyword in self.keywords:
             file = self.search_tool.search(query=keyword)
             self.files[keyword] = file
         return self.files
     
+    @async_time_logger
     async def async_search_keywords(self):
-        # TODO: 수정필요
         tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
-        self.files = await asyncio.gather(*tasks)
+        results = await asyncio.gather(*tasks)
+
+        for keyword, result in zip(self.keywords, results):
+            self.files[keyword] = result
+
         return self.files
 
+    @time_logger
     def get_table(self):
         table = self.table_generator_instance.run(purpose=self.purpose)
         self.table = table
         return table
     
+    @async_time_logger
     async def async_get_table(self):
         table = await self.table_generator_instance.arun(purpose=self.purpose)
         self.table = table
         return table
     
+    @time_logger
     def get_keywords(self) -> List[str]:
         keywords = self.keywords_generator_instance.run(purpose=self.purpose, table=self.table)
         self.keywords = keywords
         return keywords
     
+    @async_time_logger
     async def async_get_keywords(self) -> List[str]:
         keywords = await self.keywords_generator_instance.arun(purpose=self.purpose, table=self.table)
         self.keywords = keywords
         return keywords
 
+    @time_logger
     def get_draft(self):
         draft = self.draft_generator_instance.run(purpose=self.purpose, table=self.table, database=self.database)
         self.drafts.append(draft)
         return draft
 
+    @async_time_logger
     async def async_get_draft(self):
         draft = await self.draft_generator_instance.arun(purpose=self.purpose, table=self.table, database=self.database)
         self.drafts.append(draft)

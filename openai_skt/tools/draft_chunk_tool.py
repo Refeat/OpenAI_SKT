@@ -5,9 +5,9 @@ from langchain.tools import BaseTool
 
 from database.database import DataBase
 
-class DatabaseTool(BaseTool):
-    name = "database"
-    description = "A tool that allows the agent to query a database"
+class DraftChunkTool(BaseTool):
+    name = "draft_chunk_tool"
+    description = "A tool to find the parts of a draft that match a query."
     args_schema: Optional[Type[BaseModel]] = None
     """Pydantic model class to validate and parse the tool's input arguments."""
 
