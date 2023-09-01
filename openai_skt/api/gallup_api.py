@@ -20,7 +20,7 @@ class GallupAPI(BaseAPI):
         self.schema_name_list = ['번호', '제목', '날짜', '첨부파일', '링크', 'data_type', 'data_path']
 
     def search(self, query):
-        pass
+        return asyncio.run(self.async_search(query))
 
     async def async_search(self, query, target='1'):
         
