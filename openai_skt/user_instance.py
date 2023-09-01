@@ -1,4 +1,11 @@
 import os
+import configparser
+
+config = configparser.ConfigParser()
+config.read('../.secrets.ini')
+openai_api_key = config['OPENAI']['OPENAI_API_KEY']
+os.environ.update({'OPENAI_API_KEY': openai_api_key})
+
 import json
 import asyncio
 from typing import List
@@ -10,13 +17,14 @@ from models.draft_generator import DraftGeneratorInstance
 from models.keywords_generator import KeywordsGeneratorInstance
 from models.table_generator import TableGeneratorInstance
 
+verbose = True
 
-table_chain = TableChain()
-keywords_chain = KeywordsChain()
-draft_chain = DraftChain()
+table_chain = TableChain(verbose=verbose)
+keywords_chain = KeywordsChain(verbose=verbose)
+draft_chain = DraftChain(verbose=verbose)
 
 table_generator_instance = TableGeneratorInstance(table_chain=table_chain)
-keywords_generator_instance = KeywordsGeneratorInstance(chain=keywords_chain)
+keywords_generator_instance = KeywordsGeneratorInstance(keywords_chain=keywords_chain)
 draft_generator_instance = DraftGeneratorInstance(draft_chain=draft_chain)
 
 search_tool = SearchTool()
@@ -34,10 +42,11 @@ class UserInstance:
         self.table = None
         self.keywords = None
         self.draft = None
+        self.draft_dict = None
 
         self.user_instance_path = None
-        self.files = list()
-        self.database = None
+        self.files = dict() # {'keyword': {'api_name':[{},{}]]}}
+        self.database = DataBase(files=[])
         self.database_path = None
 
         self.table_generator_instance = table_generator_instance
@@ -49,6 +58,7 @@ class UserInstance:
     def set_purpose(self, purpose:str=None):
         if purpose is not None:
             self.purpose = purpose
+            return purpose
         else:
             raise ValueError("purpose must be specified")
 
@@ -70,40 +80,48 @@ class UserInstance:
     def save_instance(self):
         user_root_path = os.path.join(self.save_root_path, f"{self.user_id}")
         os.makedirs(user_root_path, exist_ok=True)
+        self.database_path = os.path.join(user_root_path, "database.json")
 
         # save user instance
         self.user_instance_path = os.path.join(user_root_path, "user_instance.json")
-        with open(self.user_instance_path, "w") as f:
+        with open(self.user_instance_path, "w", encoding='utf-8') as f:
             json.dump(self.to_dict(), f, ensure_ascii=False, indent=4)
+        print(f"saved user instance to {self.user_instance_path}")
 
         # save database
-        user_database_path = os.path.join(user_root_path, "db")
-        os.makedirs(user_database_path, exist_ok=True)
-        self.database_path = os.path.join(user_root_path, "database.json")
         self.database.save(self.database_path)
+        print(f"saved database to {self.database_path}")
 
     def to_dict(self):
+        serialized_draft_dict = {key: [chunk.to_dict() for chunk in chunk_list] 
+                             for key, chunk_list in self.draft_dict.items()}
         return {
             "purpose": self.purpose,
             "keywords": self.keywords,
-            "database_path": self.database_path
+            "draft": self.draft,
+            "database_path": self.database_path,
+            "draft_dict": serialized_draft_dict,
         }
     
     def parse_files_to_embedchain(self):
+        # {'keyword': {'api_name':[{},{}]]}}
         files = []
-        for file in self.files.values():
-            data_path, data_type = file['data_path'], file['data_type']
-            files.append((data_path, data_type))
-            self.database.add(data_path, data_type)
+        for keyword, files_of_keyword  in self.files.items(): # keyword: 국민연금, files_of_keyword: {'kostat':[], 'gallup':[]}
+            for api_name, files_of_api in files_of_keyword.items(): # api_name: kostat, files_of_api: [{'제목':'IMF', '내용':'IMF 내용'}]
+                for file in files_of_api:
+                    data_path, data_type = file['data_path'], file['data_type']
+                    files.append((data_path, data_type))
+                    self.database.add(data_path, data_type)
         return self.database
     
     def search_keywords(self):
         for keyword in self.keywords:
             file = self.search_tool.search(query=keyword)
-            self.files.append(file)
+            self.files[keyword] = file
         return self.files
     
     async def async_search_keywords(self):
+        # TODO: 수정필요
         tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
         self.files = await asyncio.gather(*tasks)
         return self.files
@@ -129,12 +147,13 @@ class UserInstance:
         return keywords
 
     def get_draft(self):
-        draft = self.draft_generator_instance.run(purpose=self.purpose, keywords=self.keywords, database=self.database)
+        draft, draft_dict = self.draft_generator_instance.run(purpose=self.purpose, table=self.table, database=self.database)
         self.draft = draft
+        self.draft_dict = draft_dict
         return draft
 
     async def async_get_draft(self):
-        draft = await self.draft_generator_instance.arun(purpose=self.purpose, keywords=self.keywords, database=self.database)
+        draft = await self.draft_generator_instance.arun(purpose=self.purpose, table=self.table, database=self.database)
         self.draft = draft
         return draft
 
@@ -163,10 +182,16 @@ if __name__ == "__main__":
         draft_generator_instance=draft_generator_instance, 
         search_tool=search_tool
     )
-    user_instance.set_purpose(purpose="전세계적으로 축구가 유명한 스포츠인 이유")
-    user_instance.get_table()
-    user_instance.get_keywords()
-    user_instance.search_keywords()
-    user_instance.parse_files_to_embedchain()
-    user_instance.get_draft()
+    purpose = user_instance.set_purpose(purpose="전세계적으로 축구가 유명한 스포츠인 이유")
+    print('purpose: ', purpose)
+    table = user_instance.get_table()
+    print('table: ', table)
+    keywords = user_instance.get_keywords()
+    print('keywords: ', keywords)
+    files = user_instance.search_keywords()
+    print('searched files: ', len(user_instance.files))
+    database = user_instance.parse_files_to_embedchain()
+    print('database: ', database)
+    draft = user_instance.get_draft()
+    print('draft: ', draft)
     user_instance.save_instance()

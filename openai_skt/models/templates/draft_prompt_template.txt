@@ -1,1 +1,17 @@
-{}
+I want you to be the writer who writes the draft for the article.
+I will give you the topic of the article, table of the contents, the draft written so far, and background knowledge.
+Write the part that corresponds to {single_table} after the draft written so far.
+Say only what is newly written. But if there is none, say nothing, and don't give me an explanation.
+Answer in Korean.
+
+background knowledge:
+{database}
+
+topic:
+{purpose}
+
+table of contents:
+{table}
+
+draft written so far:
+{draft}

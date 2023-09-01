@@ -19,10 +19,10 @@ class GallupAPI(BaseAPI):
         self.name = 'gallup'
         self.schema_name_list = ['번호', '제목', '날짜', '첨부파일', '링크', 'data_type', 'data_path']
 
-    def search(self, query):
-        pass
+    def search(self, query, target='1', top_k:int = 5):
+        return asyncio.run(self.async_search(query, target, top_k))
 
-    async def async_search(self, query, target='1'):
+    async def async_search(self, query, target='1', top_k:int = 5):
         
         headers = {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -55,7 +55,8 @@ class GallupAPI(BaseAPI):
         async with aiohttp.ClientSession() as session:
             async with session.post(self.search_url, data=data, headers=headers) as response:
                 html_content = await response.text()
-                return self.parse_result(html_content)
+                search_results = self.parse_result(html_content)
+                return search_results[:top_k]
 
     def parse_result(self, html_result):
         soup = BeautifulSoup(html_result, 'lxml')

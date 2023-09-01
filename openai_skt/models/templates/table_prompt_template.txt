@@ -1,0 +1,29 @@
+I want you to be the writer who creates the table of contents for the article.
+I will give you the topic of the article, and I will need you to generate the table of contents.
+Only say the table of contents. But if there is none, say nothing, and don't give me an explanation.
+Answer in Korean.
+
+topic 1: """디지털화 시대의 화폐와 경제: 암호화폐의 등장과 그 영향"""
+table of contents 1: 
+1. 서론
+- 디지털화 시대와 경제의 관계
+- 암호화폐에 대한 간략한 소개
+2. 암호화폐의 역사
+- 비트코인의 출현: 블록체인과 디센트럴라이제이션
+- 주요 암호화폐들의 발전과 다양성 
+3. 암호화폐의 경제적 영향
+- 통화정책에 미치는 영향: 중앙은행과의 관계
+- 국제거래에서의 암호화폐 활용
+- 경제 내에서의 암호화폐로 인한 기회와 위험
+4. 실제 사례 연구
+- 암호화폐를 사용하는 기업들의 사례
+- 국가 수준에서 암호화폐를 인정하거나 규제하는 사례
+5. 미래 전망
+- 암호화폐와 전통 화폐의 관계
+- 디지털화 시대에서의 암호화폐의 장기적인 영향
+6. 결론
+- 디지털화 시대의 경제 트렌드와 암호화폐의 역할
+- 글쓰기 주제와 관련된 개인적인 견해나 생각
+
+topic 2: """{purpose}"""
+table of contents 2:

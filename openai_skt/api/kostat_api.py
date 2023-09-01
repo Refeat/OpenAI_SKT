@@ -21,110 +21,18 @@ class KostatAPI(BaseAPI):
         self.name = 'kostat'
         self.schema_name_list = ['제목', '날짜', '설명', '링크', 'data_type', 'data_path']
 
-    def search(self, query):
-        pass
+    def search(self, query, top_k:int = 5):
+        return asyncio.run(self.async_search(query, top_k))
     
-    async def async_search(self, query):
+    async def async_search(self, query, top_k:int = 5):
         
-        headers = {
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Accept-Language": "ko,ko-KR;q=0.9,en;q=0.8,en-US;q=0.7,en-GB;q=0.6,ja;q=0.5",
-            "Cache-Control": "max-age=0",
-            "Connection": "keep-alive",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Cookie": "",
-            "Host": "kostat.go.kr",
-            "Origin": "https://kostat.go.kr",
-            "Referer": "https://kostat.go.kr/unifSearch/search.es",
-            "Sec-Ch-Ua": '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
-            "Sec-Ch-Ua-Mobile": "?0",
-            "Sec-Ch-Ua-Platform": '"Windows"',
-            "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-Site": "same-origin",
-            "Sec-Fetch-User": "?1",
-            "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"
-        }
-        
-        # Create payload (reduced to only the essentials, as you provided before)
-        data = {
-            'start': 0,
-            'start1': 0,
-            'count': 10,
-            'startCount': 0,
-            'startCount1': 0,
-            'startDate': '',
-            'endDate': '',
-            'viewCount': 0,
-            'viewContent': 'Y',
-            'range': '',
-            'subCol': 'ALL',
-            'sort': 'DATE,1',
-            'sortField': 'RANK,1',
-            'searchOption': '',
-            'divField': '',
-            'datesearch': 'no',
-            'requery': '',
-            'lastquery': '서울 부동산 가격',
-            'detailSearchf': 'N',
-            'subjectSearch': '',
-            'synYN': 'Y',
-            'searchField': '',
-            'openDivClass3': '',
-            'cookie': '000',
-            'jopage': 1,
-            'arkChk': 'Y',
-            'YstartTmp': '',
-            'MstartTmp': '',
-            'DstartTmp': '',
-            'YendTmp': '',
-            'MendTmp': '',
-            'DendTmp': '',
-            'sortCondition': '',
-            'searchFieldCondition': '',
-            'termsCondition': '',
-            'viewcountCondition': '',
-            'statDBsearchField1': 1,
-            'statDBsearchField2': 1,
-            'statDBsearchField3': 1,
-            'statDBsearchField4': 1,
-            'statDBsearchField5': 1,
-            'webCheckbox1': '',
-            'webCheckbox2': '',
-            'webCheckbox3': '',
-            'webCheckbox4': '',
-            'webCheckbox5': '',
-            'webCheckbox6': '',
-            'webCheckbox7': '',
-            'webCheckbox8': '',
-            'webCheckbox9': '',
-            'webCheckbox10': '',
-            'webCheckbox11': '',
-            'webCheckbox12': '',
-            'webCheckbox13': '',
-            'hireCheckbox1': '',
-            'hireCheckbox2': '',
-            'hireCheckbox3': '',
-            'hireCheckbox4': '',
-            'hireCheckbox5': '',
-            'hireCheckbox6': '',
-            'hireCheckbox7': '',
-            'hireCheckbox8': '',
-            'hireCheckbox9': '',
-            'collection': 'statDB',
-            'statId': '',
-            'orgCode': '',
-            'select_search': 'statDB',
-            'query': '서울 부동산 가격'
-        }
-
+        data, headers = self.parse_input(query)
 
         async with aiohttp.ClientSession() as session:
             async with session.post(self.search_url, data=data, headers=headers) as response:
                 html_content = await response.text()
-                return self.parse_result(html_content)
+                search_results = self.parse_result(html_content)
+                return search_results[:top_k]
 
     def parse_result(self, result):
         soup = BeautifulSoup(result, 'lxml')
@@ -176,6 +84,103 @@ class KostatAPI(BaseAPI):
         }
 
         return base_url + "?" + urllib.parse.urlencode(params)
+    
+    def parse_input(self, query):
+        headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Language": "ko,ko-KR;q=0.9,en;q=0.8,en-US;q=0.7,en-GB;q=0.6,ja;q=0.5",
+            "Cache-Control": "max-age=0",
+            "Connection": "keep-alive",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Cookie": "",
+            "Host": "kostat.go.kr",
+            "Origin": "https://kostat.go.kr",
+            "Referer": "https://kostat.go.kr/unifSearch/search.es",
+            "Sec-Ch-Ua": '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": '"Windows"',
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-Fetch-User": "?1",
+            "Upgrade-Insecure-Requests": "1",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"
+        }
+        
+        # Create payload (reduced to only the essentials, as you provided before)
+        data = {
+            'start': 0,
+            'start1': 0,
+            'count': 10,
+            'startCount': 0,
+            'startCount1': 0,
+            'startDate': '',
+            'endDate': '',
+            'viewCount': 0,
+            'viewContent': 'Y',
+            'range': '',
+            'subCol': 'ALL',
+            'sort': 'DATE,1',
+            'sortField': 'RANK,1',
+            'searchOption': '',
+            'divField': '',
+            'datesearch': 'no',
+            'requery': '',
+            'lastquery': query,
+            'detailSearchf': 'N',
+            'subjectSearch': '',
+            'synYN': 'Y',
+            'searchField': '',
+            'openDivClass3': '',
+            'cookie': '000',
+            'jopage': 1,
+            'arkChk': 'Y',
+            'YstartTmp': '',
+            'MstartTmp': '',
+            'DstartTmp': '',
+            'YendTmp': '',
+            'MendTmp': '',
+            'DendTmp': '',
+            'sortCondition': '',
+            'searchFieldCondition': '',
+            'termsCondition': '',
+            'viewcountCondition': '',
+            'statDBsearchField1': 1,
+            'statDBsearchField2': 1,
+            'statDBsearchField3': 1,
+            'statDBsearchField4': 1,
+            'statDBsearchField5': 1,
+            'webCheckbox1': '',
+            'webCheckbox2': '',
+            'webCheckbox3': '',
+            'webCheckbox4': '',
+            'webCheckbox5': '',
+            'webCheckbox6': '',
+            'webCheckbox7': '',
+            'webCheckbox8': '',
+            'webCheckbox9': '',
+            'webCheckbox10': '',
+            'webCheckbox11': '',
+            'webCheckbox12': '',
+            'webCheckbox13': '',
+            'hireCheckbox1': '',
+            'hireCheckbox2': '',
+            'hireCheckbox3': '',
+            'hireCheckbox4': '',
+            'hireCheckbox5': '',
+            'hireCheckbox6': '',
+            'hireCheckbox7': '',
+            'hireCheckbox8': '',
+            'hireCheckbox9': '',
+            'collection': 'statDB',
+            'statId': '',
+            'orgCode': '',
+            'select_search': 'statDB',
+            'query': query
+        }
+
+        return data, headers
     
 if __name__ == "__main__":
     kostat_api = KostatAPI()
