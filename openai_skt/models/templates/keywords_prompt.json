@@ -1,5 +1,5 @@
 {
-    "_type": "prompt",
-    "input_variables": ["purpose", "table"],
-    "template_path": "../openai_skt/models/templates/keywords_prompt_template.txt"
+  "_type": "prompt",
+  "input_variables": ["purpose", "table"],
+  "template_path": "../openai_skt/models/templates/keywords_prompt_template.txt"
 }
