@@ -65,6 +65,7 @@ class DataBase:
         self.embed_chain = EmbedChain(config=AppConfig())
         self.data = {}
         self.chunks = {}
+        self.where = None
 
         try:
             get_ipython
@@ -82,6 +83,7 @@ class DataBase:
         for data in self.data.values():
             self.token_num += data.token_num
         self.cost = self.token_num * 0.0001 * 0.0002
+        self.update_where()
     
     def add(self, filepath: str, data_type: str):
         try:
@@ -115,13 +117,21 @@ class DataBase:
             pass
         else:
             raise TypeError('query should be str or list of str')
-        result_id_list = self.embed_chain.db.collection.query(query_texts = query, n_results=top_k, where={})['ids']
+        result_id_list = self.embed_chain.db.collection.query(query_texts = query, n_results=top_k, where=self.where)['ids']
         return [self.ids_2_chunk(ids) for ids in result_id_list]
 
     def ids_2_chunk(self, ids:List[str]):
         # input list of id [hash1, hash2, ...] (this should be hash of 'chunk')
         # output list of data [chunk1, chunk2, ...]
         return [self.chunks[cur_id] for cur_id in ids]
+
+    def update_where(self):
+        if len(self.data.keys()) == 1:
+            self.where = {'hash': self[0].hash}
+        else:
+            self.where = {
+                "$or": [{'hash': hash_id} for hash_id in self.data.keys()]
+            }
     
     def save(self, database_path:str):
         with open(database_path, 'w', encoding='utf-8') as f:
