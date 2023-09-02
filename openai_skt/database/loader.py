@@ -68,20 +68,17 @@ from embedchain.utils import clean_string
 
 def webpage_load_loading_fix(self, url):
         """Load data from a web page using Selenium."""
-        
         service = ChromeService()
 
         # Configure ChromeOptions and ChromeService
         chrome_options = ChromeOptions()
-        chrome_options.add_argument("--headless")  # Run Chrome in headless mode (no GUI)
+        # chrome_options.add_argument("--headless")  # Run Chrome in headless mode (no GUI)
         
         # Create a WebDriver instance
         driver = webdriver.Chrome(service=service, options=chrome_options)
         content = None
-        
         try:
             driver.get(url)
-            
             # Define a custom Expected Condition to wait for iframes to be loaded
             def all_iframes_loaded(driver):
                 iframes = driver.find_elements(By.TAG_NAME, "iframe")

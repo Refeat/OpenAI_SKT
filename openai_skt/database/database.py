@@ -8,6 +8,8 @@ from embedchain.config import AppConfig
 
 from database.data import Data
 import database.loader
+import threading
+from time import time
 
 class DataBase:
     # db = DataBase([(path1, type1), (path2, type2), ...]) 으로 선언
@@ -24,24 +26,22 @@ class DataBase:
         except NameError:
             is_jupyter = False
 
-        if is_jupyter:
-            nest_asyncio.apply()
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(self.async_add_files(files))
-        else:
-            self.add_files(files)
-        self.token_num = 0
-        for data in self.data.values():
-            self.token_num += data.token_num
-        self.cost = self.token_num * 0.0001 * 0.0002
+        # if is_jupyter:
+        #     nest_asyncio.apply()
+        #     loop = asyncio.get_event_loop()
+        #     loop.run_until_complete(self.async_add_files(files))
+        # else:
+
+        self.multithread_add_files(files)
+        self.update_token_num()
         self.update_where()
     
     def add(self, filepath: str, data_type: str):
-        try:
-            hash_id = self.embed_chain.add(filepath, data_type)
-        except:
-            print(filepath, 'has no data')
-            return
+        # try:
+        hash_id = self.embed_chain.add(filepath, data_type)
+        # except:
+        #     print(filepath, 'has no data')
+        #     return
         db_ids = list(self.embed_chain.db.get([], {'hash': hash_id}))
         parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas", "embeddings"])
         self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
@@ -52,7 +52,7 @@ class DataBase:
         self.token_num = 0
         for data in self.data.values():
             self.token_num += data.token_num
-        self.cost = self.token_num * 0.0001 * 0.0002        
+        self.cost = self.token_num * 0.0001 * 0.0002
 
     def add_files(self, files: List[tuple]):
         for file in files:
@@ -65,6 +65,14 @@ class DataBase:
     async def async_add_files(self, files: List[tuple]):
         data_add_tasks = [self.async_add(file_path, data_type) for (file_path, data_type) in files]
         await asyncio.gather(*data_add_tasks)
+    
+    def multithread_add_files(self, files: List[tuple]):
+        data_add_threads = [threading.Thread(target=self.add, args=[file_path, data_type]) for (file_path, data_type) in files]
+        for thread in data_add_threads:
+            thread.start()
+        
+        for thread in data_add_threads:
+            thread.join()
 
     def query(self, query, top_k:int = 5):
         # input list of query ex) ['hi', 'hello']
