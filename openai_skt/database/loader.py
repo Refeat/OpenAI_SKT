@@ -65,17 +65,48 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from embedchain.loaders.base_loader import BaseLoader
 from embedchain.utils import clean_string
+import time
+import asyncio
+
+import asyncio
+from queue import Queue
+import threading
+
+class WebdriverQueue:
+    def __init__(self, num):
+        self.drivers = Queue()
+        self.lock = threading.Lock()
+
+        for _ in range(num):
+            service = ChromeService()
+            chrome_options = ChromeOptions()
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+            self.drivers.put(driver)
+
+    def pop_driver(self):
+        while True:
+            with self.lock:
+                if not self.drivers.empty():
+                    return self.drivers.get()
+            time.sleep(1)
+            # Wait or retry if the queue is empty
+
+    def push_driver(self, driver):
+        while True:
+            with self.lock:
+                if not self.drivers.full():
+                    self.drivers.put(driver)
+                    return
+            time.sleep(1)
+            # Wait or retry if the queue is full
+
+webdrivers = WebdriverQueue(5)
 
 def webpage_load_loading_fix(self, url):
         """Load data from a web page using Selenium."""
-        service = ChromeService()
-
-        # Configure ChromeOptions and ChromeService
-        chrome_options = ChromeOptions()
-        # chrome_options.add_argument("--headless")  # Run Chrome in headless mode (no GUI)
         
-        # Create a WebDriver instance
-        driver = webdriver.Chrome(service=service, options=chrome_options)
+        driver = webdrivers.pop_driver()
+
         content = None
         try:
             driver.get(url)
@@ -96,7 +127,6 @@ def webpage_load_loading_fix(self, url):
             wait.until(all_iframes_loaded)
 
             all_text_content = []
-
             def extract_text_from_iframe(iframe_element):
                 driver.switch_to.frame(iframe_element)
                 root_element = driver.find_element(By.TAG_NAME, "html")
@@ -183,7 +213,7 @@ def webpage_load_loading_fix(self, url):
             print(f"An error occurred: {str(e)}")
         finally:
             # Close the WebDriver
-            driver.quit()
+            webdrivers.push_driver(driver)
 
         meta_data = {
             "url": url,
