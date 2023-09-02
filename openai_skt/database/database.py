@@ -29,7 +29,7 @@ class DataBase:
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self.async_add_files(files))
         else:
-            asyncio.run(self.async_add_files(files))
+            self.add_files(files)
         self.token_num = 0
         for data in self.data.values():
             self.token_num += data.token_num
@@ -46,7 +46,13 @@ class DataBase:
         parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas", "embeddings"])
         self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
         self.update_where()
-        
+        self.update_token_num()
+
+    def update_token_num(self):
+        self.token_num = 0
+        for data in self.data.values():
+            self.token_num += data.token_num
+        self.cost = self.token_num * 0.0001 * 0.0002        
 
     def add_files(self, files: List[tuple]):
         for file in files:

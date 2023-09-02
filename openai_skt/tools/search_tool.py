@@ -1,9 +1,9 @@
 import asyncio
-from api import KostatAPI, GallupAPI, YoutubeAPI
+from api import KostatAPI, GallupAPI, YoutubeAPI, GoogleSearchAPI, NaverSearchAPI
 
 class SearchTool:
     category_api_dict = {
-        'all': [KostatAPI(), GallupAPI(), YoutubeAPI()],
+        'all': [KostatAPI(), GallupAPI(), YoutubeAPI(), GoogleSearchAPI(), NaverSearchAPI()],
         'statistics': [KostatAPI()],
         # TODO: Add more APIs
     }

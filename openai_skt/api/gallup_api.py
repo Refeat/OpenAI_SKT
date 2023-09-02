@@ -31,6 +31,7 @@ class GallupAPI(BaseAPI):
             "Cache-Control": "max-age=0",
             "Connection": "keep-alive",
             "Content-Type": "application/x-www-form-urlencoded",
+            # 쿠키가 변할 수 있음. 에러발생시 쿠키를 확인하고 수정해주세요.
             "Cookie": "_gid=GA1.3.916308141.1693380110; ASPSESSIONIDAGRRTQDB=GNEKDIEDNIGAALHIDKJPNPFO; _ga=GA1.1.2053665757.1693289581; _ga_MGLX1H2HFS=GS1.1.1693380109.3.1.1693382478.0.0.0",
             "Host": "www.gallup.co.kr",
             "Origin": "https://www.gallup.co.kr",

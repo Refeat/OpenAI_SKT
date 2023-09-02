@@ -7,6 +7,8 @@ CSE_ID = config['GOOGLE']['CSE_ID']
 
 import requests
 
+import aiohttp
+
 from api.base import BaseAPI
 
 class GoogleSearchAPI(BaseAPI):
@@ -23,7 +25,8 @@ class GoogleSearchAPI(BaseAPI):
         return self.parse_result(response)
 
     async def async_search(self, query:str, top_k:int = 5):
-        return self.search(query, top_k)
+        response = await self._google_search_async(query, top_k)
+        return self.parse_result(response)
 
     def _google_search(self, query, top_k):
         params = {
@@ -34,6 +37,17 @@ class GoogleSearchAPI(BaseAPI):
         }
         response = requests.get(self.base_url, params=params)
         return response.json()
+
+    async def _google_search_async(self, query, top_k):
+        params = {
+            "q": query,
+            "key": self.api_key,
+            "cx": self.cse_id,
+            "num": top_k
+        }
+        async with aiohttp.ClientSession() as session:
+            async with session.get(self.base_url, params=params) as response:
+                return await response.json()
 
     def parse_result(self, result):
         ret = []
@@ -46,6 +60,3 @@ class GoogleSearchAPI(BaseAPI):
                 'data_path': item['link'],
             })
         return ret
-
-    async def async_parse_result(self, result):
-        return self.parse_result(result)
