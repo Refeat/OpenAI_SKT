@@ -10,7 +10,7 @@ from langchain.embeddings import OpenAIEmbeddings
 class KeywordsChain:
     def __init__(self, keywords_template=None, keywords_template_path='../openai_skt/models/templates/keywords_prompt.json', verbose=False) -> None:
         if keywords_template is not None:
-            self.keywords_template = PromptTemplate(
+            self.keywords_prompt = PromptTemplate(
                     input_variables=["purpose", "table"],
                     template=keywords_template,
                 )
@@ -34,7 +34,7 @@ class KeywordsChain:
 class DraftChain:
     def __init__(self, draft_template=None, draft_template_path='../openai_skt/models/templates/draft_prompt.json', verbose=False) -> None:
         if draft_template is not None:
-            self.draft_template = PromptTemplate(
+            self.draft_prompt = PromptTemplate(
                     input_variables=["purpose", "draft", "database", "single_table", "table"],
                     template=draft_template,
                 )

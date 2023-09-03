@@ -4,8 +4,14 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read('../.secrets.ini')
-NAVER_CLIENT_ID = config['NAVER']['NAVER_CLIENT_ID']
-NAVER_CLIENT_SECRET = config['NAVER']['NAVER_CLIENT_SECRET']
+try:
+    NAVER_CLIENT_ID = config['NAVER']['NAVER_CLIENT_ID']
+    NAVER_CLIENT_SECRET = config['NAVER']['NAVER_CLIENT_SECRET']
+except:
+    from django.conf import settings
+    config = settings.KEY_INFORMATION
+    NAVER_CLIENT_ID = config['NAVER']['NAVER_CLIENT_ID']
+    NAVER_CLIENT_SECRET = config['NAVER']['NAVER_CLIENT_SECRET']
 
 import aiohttp
 

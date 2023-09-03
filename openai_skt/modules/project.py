@@ -3,8 +3,14 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read('../.secrets.ini')
-openai_api_key = config['OPENAI']['OPENAI_API_KEY']
-os.environ.update({'OPENAI_API_KEY': openai_api_key})
+try:
+    openai_api_key = config['OPENAI']['OPENAI_API_KEY']
+    os.environ.update({'OPENAI_API_KEY': openai_api_key})
+except:
+    from django.conf import settings
+    config = settings.KEY_INFORMATION
+    openai_api_key = config['OPENAI']['OPENAI_API_KEY']
+    os.environ.update({'OPENAI_API_KEY': openai_api_key})
 
 import json
 import asyncio
