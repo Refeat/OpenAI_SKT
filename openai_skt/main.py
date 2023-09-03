@@ -35,25 +35,26 @@ search_tool = SearchTool()
 
 async def main():
     project = Project(
-        user_id="test_2", 
+        user_id="test_4", 
         table_generator_instance=table_generator_instance, 
         keywords_generator_instance=keywords_generator_instance, 
         draft_generator_instance=draft_generator_instance, 
         search_tool=search_tool
     )
     start = time.time()
-    purpose = project.set_purpose(purpose="네이버 클로바 X는 성공할 수 있을까?")
+    purpose = project.set_purpose(purpose="비디오 게임을 스포츠로 간주해야 합니까?")
     print('purpose: ', purpose, time.time()-start)
     table = project.get_table()
     print('table: ', table, time.time()-start) # 10
+    # project.set_table(table="1.서론...") # 유저가 목차 변경
     keywords = project.get_keywords()
     print('keywords: ', keywords, time.time()-start) # 13
     files = await project.async_search_keywords()
     print('searched files: ', len(project.files), time.time()-start) # 81.67
-    # database = project.parse_files_to_embedchain()
-    # print('database: ', database, time.time()-start) # 576
-    database = await project.async_parse_files_to_embedchain()
-    print('database: ', database, time.time()-start) # 1219
+    user_files = [('https://en.wikipedia.org/wiki/Elon_Musk', 'web_page'), ('hello', 'text'), ('https://www.youtube.com/watch?v=Z4fBZGbk5iQ', 'youtube_video'), ('hello.docx', 'docx')]
+    project.add_files(files=user_files) # 유저가 직접 파일 추가
+    database = project.parse_files_to_embedchain()
+    print('database: ', database, time.time()-start) # 576
     draft = project.get_draft()
     print('draft: ', draft, time.time()-start) # 1326
     project.save_instance()

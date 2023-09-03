@@ -78,3 +78,32 @@ class TableChain:
         input_dict = {'purpose': purpose}
         table = await self.table_chain.arun(input_dict)
         return table
+    
+class DraftChunkChain:
+    def __init__(self, draft_chunk_template=None, draft_chunk_template_path='../openai_skt/models/templates/draft_chunk_prompt.json', verbose=False) -> None:
+        if draft_chunk_template is not None:
+            self.draft_template = PromptTemplate(
+                    input_variables=["draft", "table", "query"],
+                    template=draft_chunk_template,
+                )
+        else:
+            self.draft_chunk_template_path = draft_chunk_template_path
+            self.draft_chunk_prompt = load_prompt(self.draft_chunk_template_path)
+        self.llm = ChatOpenAI(model="gpt-3.5-turbo-16k", temperature=0.0)
+        self.verbose = verbose
+        self.draft_chain = LLMChain(llm=self.llm, prompt=self.draft_chunk_prompt, verbose=self.verbose)
+
+    def run(self, draft:str=None, table:str=None, query:str=None):
+        input_dict = self.parse_input(draft, table, query)
+        draft = self.draft_chain.run(input_dict)
+        return draft
+
+    async def arun(self, purpose:str=None, table:str=None, query:str=None):
+        input_dict = self.parse_input(draft, table, query)
+        draft = await self.draft_chain.arun(input_dict)
+        return draft
+    
+    def parse_input(self, draft, table, query):
+        # table list에서 str로 변경
+        input_dict = {'draft': draft, 'table': table, 'query': query}
+        return input_dict

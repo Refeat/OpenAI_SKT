@@ -14,6 +14,7 @@ from time import time
 class DataBase:
     # db = DataBase([(path1, type1), (path2, type2), ...]) 으로 선언
     # db[x][y] <- db의 x번째 data, 그 데이터의 y번째 chunk 반환
+    semaphore = threading.Semaphore(5)
     def __init__(self, files:List[tuple]):
         self.embed_chain = EmbedChain(config=AppConfig())
         self.data = {}
@@ -37,16 +38,18 @@ class DataBase:
         self.update_where()
     
     def add(self, filepath: str, data_type: str):
-        # try:
-        hash_id = self.embed_chain.add(filepath, data_type)
-        # except:
-        #     print(filepath, 'has no data')
-        #     return
-        db_ids = list(self.embed_chain.db.get([], {'hash': hash_id}))
-        parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas", "embeddings"])
-        self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
-        self.update_where()
-        self.update_token_num()
+        try:
+            hash_id = self.embed_chain.add(filepath, data_type)
+            db_ids = list(self.embed_chain.db.get([], {'hash': hash_id}))
+            parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas", "embeddings"])
+            self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
+            self.update_where()
+            self.update_token_num()
+        except:
+            print(filepath, 'has no data')
+            return
+        finally:
+            self.semaphore.release()
 
     def update_token_num(self):
         self.token_num = 0
@@ -67,10 +70,16 @@ class DataBase:
         await asyncio.gather(*data_add_tasks)
     
     def multithread_add_files(self, files: List[tuple]):
-        data_add_threads = [threading.Thread(target=self.add, args=[file_path, data_type]) for (file_path, data_type) in files]
-        for thread in data_add_threads:
-            thread.start()
+        data_add_threads = []
         
+        for file_path, data_type in files:
+            # Acquire a semaphore before starting a new thread
+            self.semaphore.acquire()
+            
+            thread = threading.Thread(target=self.add, args=[file_path, data_type])
+            data_add_threads.append(thread)
+            thread.start()
+
         for thread in data_add_threads:
             thread.join()
 

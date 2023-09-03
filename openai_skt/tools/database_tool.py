@@ -18,12 +18,10 @@ class DatabaseTool(BaseTool):
     def set_database(self, database: DataBase):
         self.database = database
 
-    def search(self, input_dict: dict) -> dict:
-        query = input_dict['query']
-        result = self.database.query(query)
+    def search(self, database, query) -> dict:
+        result = database.query(query)
         return result
     
-    async def async_search(self, input_dict: dict) -> dict:
-        query = input_dict['query']
-        result = self.database.query(query)
+    async def async_search(self, database, query) -> dict:
+        result = database.query(query)
         return result

@@ -28,7 +28,7 @@ class Project:
         self.drafts = list() # [draft1, draft2, ...]
 
         self.user_instance_path = None
-        self.files = dict() # {'keyword': {'api_name':[{},{}]]}}
+        self.files = dict() # {'keyword': {'api_name':[{},{}]]}}, AI가 검색한 파일들
         self.database = DataBase(files=[])
         self.database_path = None
 
@@ -44,6 +44,16 @@ class Project:
             return purpose
         else:
             raise ValueError("purpose must be specified")
+
+    def set_table(self, table:str):
+        # TODO: 유저가 목차를 변경할 수 있도록
+        self.table = table
+        return table
+    
+    def add_files(self, files:List[tuple]):
+        # [(path1, type1), (path2, type2), ...]
+        # type: ['web_page', 'youtube_video', 'pdf_file', 'text']
+        self.database.add_files(files)
 
     def init_instance(self, purpose=None, keywords=None, files:List[tuple]=None):
         assert purpose is not None
@@ -100,7 +110,9 @@ class Project:
                 for file in files_of_api:
                     data_path, data_type = file['data_path'], file['data_type']
                     files.append((data_path, data_type))
-                    self.database.add(data_path, data_type)
+                    # self.database.add(data_path, data_type)
+
+        self.database.multithread_add_files(files)
         return self.database
 
     @async_time_logger
@@ -115,7 +127,6 @@ class Project:
         files = await asyncio.gather(*tasks)
 
         return self.database
-
     
     @time_logger
     def search_keywords(self):
