@@ -2,8 +2,16 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read('../.secrets.ini')
-YOUTUBE_KEY = config['YOUTUBE']['YOUTUBE_API_KEY']
 
+try:
+    YOUTUBE_KEY = config['YOUTUBE']['YOUTUBE_API_KEY']
+except:
+    from django.conf import settings
+    config = settings.KEY_INFORMATION
+    YOUTUBE_KEY = config['YOUTUBE']['YOUTUBE_API_KEY']
+    
+    
+    
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from oauth2client.tools import argparser

@@ -2,8 +2,14 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read('../.secrets.ini')
-GOOGLE_SEARCH_KEY = config['GOOGLE']['GOOGLE_API_KEY']
-CSE_ID = config['GOOGLE']['CSE_ID']
+try:
+    GOOGLE_SEARCH_KEY = config['GOOGLE']['GOOGLE_API_KEY']
+    CSE_ID = config['GOOGLE']['CSE_ID']
+except:
+    from django.conf import settings
+    config = settings.KEY_INFORMATION
+    GOOGLE_SEARCH_KEY = config['GOOGLE']['GOOGLE_API_KEY']
+    CSE_ID = config['GOOGLE']['CSE_ID']
 
 import requests
 
