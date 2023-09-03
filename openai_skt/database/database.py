@@ -1,3 +1,4 @@
+import os
 import json
 import asyncio
 import nest_asyncio
@@ -11,12 +12,14 @@ import database.loader
 import threading
 from time import time
 
+embed_chain = EmbedChain(config=AppConfig())
 class DataBase:
     # db = DataBase([(path1, type1), (path2, type2), ...]) 으로 선언
     # db[x][y] <- db의 x번째 data, 그 데이터의 y번째 chunk 반환
     semaphore = threading.Semaphore(5)
     def __init__(self, files:List[tuple]):
-        self.embed_chain = EmbedChain(config=AppConfig())
+        # self.embed_chain = EmbedChain(config=AppConfig())
+        self.embed_chain = embed_chain
         self.data = {}
         self.chunks = {}
         self.where = None
@@ -37,6 +40,21 @@ class DataBase:
         self.update_token_num()
         self.update_where()
     
+    @classmethod
+    def load(cls, database_path):
+        if os.path.exists(database_path):
+            with open(database_path, 'r', encoding='utf-8') as f:
+                data = json.loads(f)
+
+            files = []
+            for item in data['data']:
+                files.append((item['data_path'], item['data_type']))
+
+            # data_path와 data_type을 결합하여 files 리스트 생성
+            return cls(files=files)
+        else:
+            return cls(files=[])
+
     def add(self, filepath: str, data_type: str):
         try:
             hash_id = self.embed_chain.add(filepath, data_type)

@@ -2,8 +2,14 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read('../.secrets.ini')
-GOOGLE_SEARCH_KEY = config['GOOGLE']['GOOGLE_API_KEY']
-CSE_ID = config['GOOGLE']['CSE_ID']
+try:
+    GOOGLE_SEARCH_KEY = config['GOOGLE']['GOOGLE_API_KEY']
+    CSE_ID = config['GOOGLE']['CSE_ID']
+except:
+    from django.conf import settings
+    config = settings.KEY_INFORMATION
+    GOOGLE_SEARCH_KEY = config['GOOGLE']['GOOGLE_API_KEY']
+    CSE_ID = config['GOOGLE']['CSE_ID']
 
 import requests
 
@@ -53,9 +59,9 @@ class GoogleSearchAPI(BaseAPI):
         ret = []
         for item in result['items']:
             ret.append({
-                '제목': item['title'],
-                '링크': item['link'],
-                '설명': item.get('snippet', ''),
+                'title': item['title'],
+                # '링크': item['link'],
+                'description': item.get('snippet', ''),
                 'data_type': 'web_page',
                 'data_path': item['link'],
             })

@@ -3,8 +3,14 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read('../.secrets.ini')
-openai_api_key = config['OPENAI']['OPENAI_API_KEY']
-os.environ.update({'OPENAI_API_KEY': openai_api_key})
+try:
+    openai_api_key = config['OPENAI']['OPENAI_API_KEY']
+    os.environ.update({'OPENAI_API_KEY': openai_api_key})
+except:
+    from django.conf import settings
+    config = settings.KEY_INFORMATION
+    openai_api_key = config['OPENAI']['OPENAI_API_KEY']
+    os.environ.update({'OPENAI_API_KEY': openai_api_key})
 
 import json
 import asyncio
@@ -16,21 +22,23 @@ from utils import time_logger, async_time_logger
 class Project:
     save_root_path = f"./user"
     def __init__(self, 
-                user_id,
+                project_id,
                 table_generator_instance,
                 keywords_generator_instance,
                 draft_generator_instance,
                 search_tool) -> None:
-        self.user_id = user_id
+        self.project_id = project_id
         self.purpose = None
         self.table = None
         self.keywords = None
         self.drafts = list() # [draft1, draft2, ...]
 
-        self.user_instance_path = None
-        self.files = dict() # {'keyword': {'api_name':[{},{}]]}}, AI가 검색한 파일들
+        self.files = dict() # {'통계청':[{'내용':, '경로':},{}]}, AI가 검색한 파일들
         self.database = DataBase(files=[])
-        self.database_path = None
+        self.user_root_path = os.path.join(self.save_root_path, f"{self.project_id}")
+        os.makedirs(self.user_root_path, exist_ok=True)
+        self.database_path = os.path.join(self.user_root_path, "database.json")
+        self.user_instance_path = os.path.join(self.user_root_path, "user_instance.json")
 
         self.table_generator_instance = table_generator_instance
         self.keywords_generator_instance = keywords_generator_instance
@@ -41,14 +49,18 @@ class Project:
     def set_purpose(self, purpose:str=None):
         if purpose is not None:
             self.purpose = purpose
-            return purpose
-        else:
-            raise ValueError("purpose must be specified")
 
-    def set_table(self, table:str):
-        # TODO: 유저가 목차를 변경할 수 있도록
-        self.table = table
-        return table
+    def set_keywords(self, keywords:List[str]=None):
+        if keywords is not None:
+            self.keywords = keywords
+
+    def set_table(self, table:str=None):
+        if table is not None:
+            self.table = table
+            
+    def set_files(self, files:dict[str, List[dict[str, str]]]=None):
+        if files is not None:
+            self.files = files
     
     def add_files(self, files:List[tuple]):
         # [(path1, type1), (path2, type2), ...]
@@ -68,25 +80,40 @@ class Project:
         self.purpose = user_instance["purpose"]
         self.keywords = user_instance["keywords"]
         self.database_path = user_instance["database_path"]
-        self.database = DataBase(database_path=self.database_path)
+        self.database = DataBase.load(database_path=self.database_path)
+        
+    def load_database(self):
+        self.database = DataBase.load(database_path=self.database_path)
+    
+    @classmethod
+    def load(cls, project_id=None,
+                table_generator_instance=None,
+                keywords_generator_instance=None,
+                draft_generator_instance=None,
+                search_tool=None,
+                purpose:str=None,
+                table:str=None,
+                files:dict[str, List[dict[str, str]]]=None,
+                keywords:List[str]=None):
+        project = cls(project_id, table_generator_instance, keywords_generator_instance, draft_generator_instance, search_tool)
+        project.set_purpose(purpose)
+        project.set_table(table)
+        project.set_keywords(keywords)
+        project.set_files(files)
+        project.load_database()
+        return project
 
     @time_logger
-    def save_instance(self):
-        user_root_path = os.path.join(self.save_root_path, f"{self.user_id}")
-        os.makedirs(user_root_path, exist_ok=True)
-        self.database_path = os.path.join(user_root_path, "database.json")
-
-        # save user instance
-        self.user_instance_path = os.path.join(user_root_path, "user_instance.json")
+    def save_instance(self):        
         with open(self.user_instance_path, "w", encoding='utf-8') as f:
             json.dump(self.to_dict(), f, ensure_ascii=False, indent=4)
         print(f"saved user instance to {self.user_instance_path}")
 
         # save drafts
         for i, draft in enumerate(self.drafts):
-            draft_path = os.path.join(user_root_path, f"draft_{i}.md")
-            with open(draft_path, "w", encoding='utf-8') as f:
+            with open(self.draft_path, "w", encoding='utf-8') as f:
                 f.write(draft.text)
+            draft_path = os.path.join(self.user_root_path, f"draft_{i}.md")
             print(f"saved draft to {draft_path}")
 
         # save database
@@ -103,7 +130,7 @@ class Project:
     
     @time_logger
     def parse_files_to_embedchain(self):
-        # {'keyword': {'api_name':[{},{}]]}}
+        # {'api_name':[{},{}]]}
         files = []
         for keyword, files_of_keyword  in self.files.items(): # keyword: 국민연금, files_of_keyword: {'kostat':[], 'gallup':[]}
             for api_name, files_of_api in files_of_keyword.items(): # api_name: kostat, files_of_api: [{'제목':'IMF', '내용':'IMF 내용'}]
@@ -140,10 +167,16 @@ class Project:
         tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
         results = await asyncio.gather(*tasks)
 
-        for keyword, result in zip(self.keywords, results):
-            self.files[keyword] = result
-
-        return self.files
+        files = {}
+        for result in results:
+            for api_name, infos in result.items():
+                for info in infos:
+                    if api_name not in files:
+                        files[api_name] = []
+                    files[api_name].append(info)
+                    
+        self.files = files
+        return files
 
     @time_logger
     def get_table(self):

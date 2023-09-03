@@ -17,7 +17,6 @@ class GallupAPI(BaseAPI):
         self.base_url = 'https://www.gallup.co.kr/'
         self.search_url = self.base_url + 'etc/SearchReport.asp'
         self.name = 'gallup'
-        self.schema_name_list = ['번호', '제목', '날짜', '첨부파일', '링크', 'data_type', 'data_path']
 
     def search(self, query, target='1', top_k:int = 5):
         return asyncio.run(self.async_search(query, target, top_k))
@@ -76,11 +75,12 @@ class GallupAPI(BaseAPI):
             url = f'https://www.gallup.co.kr/gallupdb/reportContent.asp?seqNo={number}'
             
             result = {
-                '번호': number,
-                '제목': title,
-                '날짜': date,
-                '첨부파일': file_link,
-                '링크': url,
+                # '번호': number,
+                'title': title,
+                # '날짜': date,
+                # '첨부파일': file_link,
+                # '링크': url,
+                'desripction': title,
                 'data_type': 'pdf_file',
                 'data_path': file_link
             }

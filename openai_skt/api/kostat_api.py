@@ -49,10 +49,10 @@ class KostatAPI(BaseAPI):
 
             # 결과 저장
             search_results.append({
-                '제목': title,
-                '날짜': institute_period,
-                '설명': description,
-                '링크': url,
+                'title': title,
+                # '날짜': institute_period,
+                'description': description,
+                # '링크': url,
                 'data_type': 'web_page',
                 'data_path': url
             })

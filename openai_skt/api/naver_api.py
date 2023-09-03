@@ -4,8 +4,14 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read('../.secrets.ini')
-NAVER_CLIENT_ID = config['NAVER']['NAVER_CLIENT_ID']
-NAVER_CLIENT_SECRET = config['NAVER']['NAVER_CLIENT_SECRET']
+try:
+    NAVER_CLIENT_ID = config['NAVER']['NAVER_CLIENT_ID']
+    NAVER_CLIENT_SECRET = config['NAVER']['NAVER_CLIENT_SECRET']
+except:
+    from django.conf import settings
+    config = settings.KEY_INFORMATION
+    NAVER_CLIENT_ID = config['NAVER']['NAVER_CLIENT_ID']
+    NAVER_CLIENT_SECRET = config['NAVER']['NAVER_CLIENT_SECRET']
 
 import aiohttp
 
@@ -56,9 +62,9 @@ class NaverSearchAPI(BaseAPI):
         if 'items' in result:
             for item in result['items']:
                 ret.append({
-                    '제목': item['title'],
-                    '링크': item['link'],
-                    '설명': item['description'],
+                    'title': item['title'],
+                    # '링크': item['link'],
+                    'description': item['description'],
                     'data_type': 'web_page',
                     'data_path': item['link'],
                 })
