@@ -100,7 +100,7 @@ class WebdriverQueue:
             time.sleep(1)
             # Wait or retry if the queue is full
 
-webdrivers = WebdriverQueue(5)
+# webdrivers = WebdriverQueue(5)
 
 def webpage_load_loading_fix(self, url):
         """Load data from a web page using Selenium."""
@@ -226,4 +226,4 @@ def webpage_load_loading_fix(self, url):
             }
         ]
 
-WebPageLoader.load_data = webpage_load_loading_fix
+# WebPageLoader.load_data = webpage_load_loading_fix
