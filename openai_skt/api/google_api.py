@@ -35,25 +35,33 @@ class GoogleSearchAPI(BaseAPI):
         return self.parse_result(response)
 
     def _google_search(self, query, top_k):
-        params = {
-            "q": query,
-            "key": self.api_key,
-            "cx": self.cse_id,
-            "num": top_k
-        }
-        response = requests.get(self.base_url, params=params)
-        return response.json()
+        try:
+            params = {
+                "q": query,
+                "key": self.api_key,
+                "cx": self.cse_id,
+                "num": top_k
+            }
+            response = requests.get(self.base_url, params=params)
+            return response.json()
+        except:
+            print("Warning: Google Search API request failed.")
+            return {}
 
     async def _google_search_async(self, query, top_k):
-        params = {
-            "q": query,
-            "key": self.api_key,
-            "cx": self.cse_id,
-            "num": top_k
-        }
-        async with aiohttp.ClientSession() as session:
-            async with session.get(self.base_url, params=params) as response:
-                return await response.json()
+        try:
+            params = {
+                "q": query,
+                "key": self.api_key,
+                "cx": self.cse_id,
+                "num": top_k
+            }
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self.base_url, params=params) as response:
+                    return await response.json()
+        except:
+            print("Warning: Google Search API request failed.")
+            return {}
 
     def parse_result(self, result):
         ret = []
