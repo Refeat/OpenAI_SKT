@@ -57,12 +57,15 @@ class GoogleSearchAPI(BaseAPI):
 
     def parse_result(self, result):
         ret = []
-        for item in result['items']:
-            ret.append({
-                'title': item['title'],
-                # '링크': item['link'],
-                'description': item.get('snippet', ''),
-                'data_type': 'web_page',
-                'data_path': item['link'],
-            })
+        try:
+            for item in result['items']:
+                ret.append({
+                    'title': item['title'],
+                    # '링크': item['link'],
+                    'description': item.get('snippet', ''),
+                    'data_type': 'web_page',
+                    'data_path': item['link'],
+                })
+        except:
+            print(f"Warning: In {result}, 'items' key not found in the result.")
         return ret

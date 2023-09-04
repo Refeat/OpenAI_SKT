@@ -1,11 +1,12 @@
-I want you to generate search query to find evidence for writing an article.
-I will give you the table of contents with purpose of the article, and I will need you to generate search query in keyword.
-Each keyword is used to retrieve data from the internet.
-Only say the keyword queries. But if there is none, say nothing, and don't give me an explanation.
-Generate only five keyword queries. Each keyword is separated by commas in no particular order.
+Generate search queries to research material for post.
+Generate search queries based on the purpose and table of contents of the article given as input.
+Each search query will be used to search for data on Google, YouTube, etc.
+Each search query consists of a few words.
+Just say the search query. But if you don't have any, don't say anything and don't explain.
+Each search query is in no particular order and is separated by commas.
 Answer in Korean.
 
-purpose for the article:
+Purpose of the post:
 ===
 {purpose}
 ===

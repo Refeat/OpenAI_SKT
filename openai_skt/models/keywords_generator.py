@@ -16,6 +16,7 @@ class KeywordsGeneratorInstance:
     
     def parse_keywords(self, result:str) -> List[str]:
         delimiters = ['\n', ',']
+        special_chars = ['"', "'"]
         lines = result.split(delimiters[0])
 
         # Then split each line by the subsequent delimiters
@@ -28,5 +29,12 @@ class KeywordsGeneratorInstance:
                     temp = [element.split(delimiter) for element in temp]
                     temp = [item.strip() for sublist in temp for item in sublist]
                 keywords.extend(temp)
+
+
+        # Replace special characters
+        for i, keyword in enumerate(keywords):
+            for char in special_chars:
+                keyword = keyword.replace(char, '')
+            keywords[i] = keyword
 
         return keywords

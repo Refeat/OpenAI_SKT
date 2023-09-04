@@ -29,8 +29,21 @@ class NaverSearchAPI(BaseAPI):
         return self.parse_result(response)
 
     async def async_search(self, query:str, top_k:int = 5):
-        response = await self._async_naver_search(query, top_k)
-        return self.parse_result(response)
+        max_retries = 5
+        retries = 0
+        while retries < max_retries:
+            response = await self._async_naver_search(query, top_k)
+            
+            if response.get('errorCode') != '012':  # Rate limit error code
+                return self.parse_result(response)
+            else:
+                retries += 1
+                # Optionally, you can add a delay here if required
+                # await asyncio.sleep(1)
+
+        # If we reach here, it means we exhausted all our retries
+        # You can either return an error, raise an exception, etc.
+        print("Rate limit exceeded after maximum retries.")
 
     def _naver_search(self, query, top_k):
         headers = {
@@ -69,7 +82,7 @@ class NaverSearchAPI(BaseAPI):
                     'data_path': item['link'],
                 })
         else:
-            print("Warning: 'items' key not found in the result.")
+            print(f"Warning: In {result}, 'items' key not found in the result.")
         return ret
 
     async def async_parse_result(self, result):

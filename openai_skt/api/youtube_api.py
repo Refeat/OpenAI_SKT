@@ -27,13 +27,16 @@ class YoutubeAPI(BaseAPI):
         self.youtube_api = build("youtube", "v3", developerKey=YOUTUBE_KEY)
 
     def search(self, query:str, top_k:int = 5):
-        response = self.youtube_api.search().list(
-            q = query,
-            order = 'relevance',
-            part = 'snippet',
-            maxResults = top_k
-        ).execute()
-        return self.parse_result(response)
+        try:
+            response = self.youtube_api.search().list(
+                q = query,
+                order = 'relevance',
+                part = 'snippet',
+                maxResults = top_k
+            ).execute()
+            return self.parse_result(response)
+        except:
+            return []
 
     async def async_search(self, query:str, top_k:int = 5):
         return self.search(query, top_k)

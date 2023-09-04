@@ -35,14 +35,14 @@ search_tool = SearchTool()
 
 async def main():
     project = Project(
-        user_id="test_4", 
+        project_id="test_6", 
         table_generator_instance=table_generator_instance, 
         keywords_generator_instance=keywords_generator_instance, 
         draft_generator_instance=draft_generator_instance, 
         search_tool=search_tool
     )
     start = time.time()
-    purpose = project.set_purpose(purpose="비디오 게임을 스포츠로 간주해야 합니까?")
+    purpose = project.set_purpose(purpose="2023년 우크라이나 러시아 전쟁에 관한 보고서")
     print('purpose: ', purpose, time.time()-start)
     table = project.get_table()
     print('table: ', table, time.time()-start) # 10

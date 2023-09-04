@@ -111,9 +111,9 @@ class Project:
 
         # save drafts
         for i, draft in enumerate(self.drafts):
-            with open(self.draft_path, "w", encoding='utf-8') as f:
-                f.write(draft.text)
             draft_path = os.path.join(self.user_root_path, f"draft_{i}.md")
+            with open(draft_path, "w", encoding='utf-8') as f:
+                f.write(draft.text)
             print(f"saved draft to {draft_path}")
 
         # save database
@@ -132,12 +132,12 @@ class Project:
     def parse_files_to_embedchain(self):
         # {'api_name':[{},{}]]}
         files = []
-        for keyword, files_of_keyword  in self.files.items(): # keyword: 국민연금, files_of_keyword: {'kostat':[], 'gallup':[]}
-            for api_name, files_of_api in files_of_keyword.items(): # api_name: kostat, files_of_api: [{'제목':'IMF', '내용':'IMF 내용'}]
-                for file in files_of_api:
-                    data_path, data_type = file['data_path'], file['data_type']
-                    files.append((data_path, data_type))
-                    # self.database.add(data_path, data_type)
+        
+        for api_name, files_of_api in self.files.items(): # api_name: kostat, files_of_api: [{'제목':'IMF', '내용':'IMF 내용'}]
+            for file in files_of_api:
+                data_path, data_type = file['data_path'], file['data_type']
+                files.append((data_path, data_type))
+                # self.database.add(data_path, data_type)
 
         self.database.multithread_add_files(files)
         return self.database
