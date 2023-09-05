@@ -7,21 +7,21 @@ from database.database import DataBase
 
 class DatabaseTool(BaseTool):
     name = "database"
-    description = "A tool that allows the agent to query a database"
+    description = "A tool to extract data from a database with a query"
     args_schema: Optional[Type[BaseModel]] = None
     """Pydantic model class to validate and parse the tool's input arguments."""
+    database: DataBase
 
-    def __init__(self, database=None) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.database = database
 
     def set_database(self, database: DataBase):
         self.database = database
 
-    def search(self, database, query) -> dict:
-        result = database.query(query)
+    def _run(self, query) -> dict:
+        result = self.database.query(query)
         return result
     
-    async def async_search(self, database, query) -> dict:
-        result = database.query(query)
+    async def _arun(self, query) -> dict:
+        result = self.database.query(query)
         return result

@@ -1,5 +1,6 @@
 import asyncio
 import urllib
+import requests
 
 import aiohttp
 from bs4 import BeautifulSoup
@@ -19,10 +20,28 @@ class GallupAPI(BaseAPI):
         self.name = 'gallup'
 
     def search(self, query, target='1', top_k:int = 5):
-        return asyncio.run(self.async_search(query, target, top_k))
+        data, headers = self.parse_input(query, target)
+
+        response = requests.post(self.search_url, data=data, headers=headers)
+        
+        if response.status_code == 200:
+            html_content = response.text
+            search_results = self.parse_result(html_content)
+            return search_results[:top_k]
+        else:
+            print('갤럽 API 검색 요청에 실패하였습니다.')
+            return []
 
     async def async_search(self, query, target='1', top_k:int = 5):
-        
+        data, headers = self.parse_input(query, target)
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(self.search_url, data=data, headers=headers) as response:
+                html_content = await response.text()
+                search_results = self.parse_result(html_content)
+                return search_results[:top_k]
+
+    def parse_input(self, query, target='1'):
         headers = {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "Accept-Encoding": "gzip, deflate, br",
@@ -51,12 +70,7 @@ class GallupAPI(BaseAPI):
             'search_target': target,  # '1'은 갤럽리포트, '2'는 웹사이트
             'search_query':  urllib.parse.quote(query.encode('euc-kr'))
         }
-
-        async with aiohttp.ClientSession() as session:
-            async with session.post(self.search_url, data=data, headers=headers) as response:
-                html_content = await response.text()
-                search_results = self.parse_result(html_content)
-                return search_results[:top_k]
+        return data, headers
 
     def parse_result(self, html_result):
         soup = BeautifulSoup(html_result, 'lxml')

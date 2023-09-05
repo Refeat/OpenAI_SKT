@@ -6,7 +6,7 @@ from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOut
 from langchain.prompts import StringPromptTemplate
 from langchain.schema import AgentAction, AgentFinish, OutputParserException
 
-from tools import DatabaseTool, DraftChunkTool
+from tools import DatabaseTool, DraftChunkTool, GraphTool
 
 # Set up a prompt template
 class CustomPromptTemplate(StringPromptTemplate):
@@ -60,14 +60,14 @@ class DraftEditAgent:
         
         self.output_parser = CustomOutputParser()
         self.verbose = verbose
-        self.tools = tools
+        self.tools = [DatabaseTool(), DraftChunkTool(), GraphTool()]
 
         self.draft_edit_prompt = CustomPromptTemplate(
             template=self.draft_edit_prompt_template,
             tools=self.tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because that is needed
-            input_variables=["input", "intermediate_steps", "draft_edit_history"]
+            input_variables=["user_query", "draft", "intermediate_steps"]
         )
 
         self.llm = OpenAI(temperature=0, verbose=self.verbose)
@@ -81,17 +81,18 @@ class DraftEditAgent:
         )
         self.agent_executor = AgentExecutor.from_agent_and_tools(agent=self.agent, tools=self.tools, verbose=self.verbose)
 
-    def run(self, question, draft_edit_history):
-        input_dict = self.parse_input(question, draft_edit_history)
+    def run(self, database, draft, query):
+        input_dict = self.parse_input(database, draft, query)
         result = self.agent_executor.run(input_dict=input_dict)
         return result
 
-    async def arun(self, question, draft_edit_history):
-        input_dict = self.parse_input(question, draft_edit_history)
+    async def arun(self, database, draft, query):
+        input_dict = self.parse_input(database, draft, query)
         result = await self.agent_executor.arun(input_dict=input_dict)
         return result
     
-    def parse_input(self, question, draft_edit_history):
-        input_draft_edit_history = draft_edit_history[:2]
-        input_dict = {'input': question, 'draft_edit_history': input_draft_edit_history}
+    def parse_input(self, database, draft, query):
+        database_tool = self.tools[0]
+        database_tool.set_database(database)
+        input_dict = {'user_query': query, 'draft': draft.text}
         return input_dict

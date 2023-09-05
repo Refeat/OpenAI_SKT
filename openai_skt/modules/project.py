@@ -1,11 +1,15 @@
 import os
-import configparser
 
-config = configparser.ConfigParser()
-config.read('../.secrets.ini')
 try:
-    openai_api_key = config['OPENAI']['OPENAI_API_KEY']
-    os.environ.update({'OPENAI_API_KEY': openai_api_key})
+    try:
+        pass
+    except:
+        import configparser
+
+        config = configparser.ConfigParser()
+        config.read('../.secrets.ini')
+        openai_api_key = config['OPENAI']['OPENAI_API_KEY']
+        os.environ.update({'OPENAI_API_KEY': openai_api_key})
 except:
     from django.conf import settings
     config = settings.KEY_INFORMATION
@@ -16,8 +20,12 @@ import json
 import asyncio
 from typing import List, Dict
 
+from embedchain.embedchain import EmbedChain
+from embedchain.config import AppConfig
+
 from database.database import DataBase
-from utils import time_logger, async_time_logger
+
+embed_chain = EmbedChain(AppConfig())
 
 class Project:
     save_root_path = f"./user"
@@ -34,7 +42,7 @@ class Project:
         self.drafts = list() # [draft1, draft2, ...]
 
         self.files = dict() # {'통계청':[{'내용':, '경로':},{}]}, AI가 검색한 파일들
-        self.database = DataBase(files=[])
+        self.database = DataBase(files=[], embed_chain=embed_chain)
         self.user_root_path = os.path.join(self.save_root_path, f"{self.project_id}")
         os.makedirs(self.user_root_path, exist_ok=True)
         self.database_path = os.path.join(self.user_root_path, "database.json")
@@ -49,18 +57,22 @@ class Project:
     def set_purpose(self, purpose:str=None):
         if purpose is not None:
             self.purpose = purpose
+        return self.purpose
 
     def set_keywords(self, keywords:List[str]=None):
         if keywords is not None:
             self.keywords = keywords
+        return self.keywords
 
     def set_table(self, table:str=None):
         if table is not None:
             self.table = table
+        return self.table
             
     def set_files(self, files:Dict[str, List[Dict[str, str]]]=None):
         if files is not None:
             self.files = files
+        return self.files
     
     def add_files(self, files:List[tuple]):
         # [(path1, type1), (path2, type2), ...]
@@ -71,7 +83,7 @@ class Project:
         assert purpose is not None
         self.purpose = purpose
         self.keywords = keywords
-        self.database = DataBase(files=files)
+        self.database = DataBase(files=files, embed_chain=embed_chain)
 
     def load_instance(self, user_instance_path:str=None):
         assert user_instance_path is not None
@@ -83,7 +95,7 @@ class Project:
         self.database = DataBase.load(database_path=self.database_path)
         
     def load_database(self):
-        self.database = DataBase.load(database_path=self.database_path)
+        self.database = DataBase.load(database_path=self.database_path, embed_chain=embed_chain)
     
     @classmethod
     def load(cls, project_id=None,
@@ -103,7 +115,6 @@ class Project:
         project.load_database()
         return project
 
-    @time_logger
     def save_instance(self):        
         with open(self.user_instance_path, "w", encoding='utf-8') as f:
             json.dump(self.to_dict(), f, ensure_ascii=False, indent=4)
@@ -128,7 +139,6 @@ class Project:
             "draft": [draft.to_dict() for draft in self.drafts]
         }
     
-    @time_logger
     def parse_files_to_embedchain(self):
         # {'api_name':[{},{}]]}
         files = []
@@ -142,7 +152,6 @@ class Project:
         self.database.multithread_add_files(files)
         return self.database
 
-    @async_time_logger
     async def async_parse_files_to_embedchain(self):
         # {'keyword': {'api_name':[{},{}]]}}
         async def handle_file(file):
@@ -155,14 +164,18 @@ class Project:
 
         return self.database
     
-    @time_logger
     def search_keywords(self):
+        files = {}
         for keyword in self.keywords:
-            file = self.search_tool.search(query=keyword)
-            self.files[keyword] = file
-        return self.files
+            result = self.search_tool.search(query=keyword)
+            for api_name, infos in result.items():
+                for info in infos:
+                    if api_name not in files:
+                        files[api_name] = []
+                    files[api_name].append(info)
+        self.files = files
+        return files
     
-    @async_time_logger
     async def async_search_keywords(self):
         tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
         results = await asyncio.gather(*tasks)
@@ -178,37 +191,31 @@ class Project:
         self.files = files
         return files
 
-    @time_logger
     def get_table(self):
         table = self.table_generator_instance.run(purpose=self.purpose)
         self.table = table
         return table
     
-    @async_time_logger
     async def async_get_table(self):
         table = await self.table_generator_instance.arun(purpose=self.purpose)
         self.table = table
         return table
-    
-    @time_logger
+
     def get_keywords(self) -> List[str]:
         keywords = self.keywords_generator_instance.run(purpose=self.purpose, table=self.table)
         self.keywords = keywords
         return keywords
     
-    @async_time_logger
     async def async_get_keywords(self) -> List[str]:
         keywords = await self.keywords_generator_instance.arun(purpose=self.purpose, table=self.table)
         self.keywords = keywords
         return keywords
 
-    @time_logger
     def get_draft(self):
         draft = self.draft_generator_instance.run(purpose=self.purpose, table=self.table, database=self.database)
         self.drafts.append(draft)
         return draft
 
-    @async_time_logger
     async def async_get_draft(self):
         draft = await self.draft_generator_instance.arun(purpose=self.purpose, table=self.table, database=self.database)
         self.drafts.append(draft)
@@ -229,3 +236,8 @@ class Project:
         else:
             self.qna_history.append([question, answer])
         return answer
+
+    def edit_draft(self, draft_id:int, query:str):
+        draft = self.drafts[draft_id]
+        draft.edit(query)
+        return self.drafts[draft_id]

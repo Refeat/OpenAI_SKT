@@ -58,11 +58,11 @@ class DraftChain(BaseChain):
                 verbose=False) -> None:
         super().__init__(template=draft_template, input_variables=input_variables, template_path=draft_template_path, model=model, verbose=verbose)
 
-    def run(self, database=None, purpose=None, table=None, draft=None):
-        return super().run(database=database, purpose=purpose, table=table, draft=draft)
+    def run(self, database=None, purpose=None, table=None, draft=None, single_table=None):
+        return super().run(database=database, purpose=purpose, table=table, draft=draft, single_table=single_table)
     
-    async def arun(self, database=None, purpose=None, table=None, draft=None):
-        return await super().arun(database=database, purpose=purpose, table=table, draft=draft)
+    async def arun(self, database=None, purpose=None, table=None, draft=None, single_table=None):
+        return await super().arun(database=database, purpose=purpose, table=table, draft=draft, single_table=single_table)
        
 class TableChain(BaseChain):
     def __init__(self, 

@@ -4,18 +4,14 @@ from pydantic import BaseModel
 from langchain.tools import BaseTool
 from langchain.tools.python.tool import PythonREPLTool
 
-from models.llm.chain import GraphChain
-
-graph_chain = GraphChain()
-
 class GraphTool(BaseTool):
     name = "graph_tool"
     description = "A tool to draw a graph. It return image path of the graph."
     args_schema: Optional[Type[BaseModel]] = None
     """Pydantic model class to validate and parse the tool's input arguments."""
 
-    graph_chain: Any  # 클래스 변수로 선언
-    python_tool: Any  # 클래스 변수로 선언
+    graph_chain: Any
+    python_tool: Any
 
     def __init__(self, graph_chain) -> None:
         super().__init__()

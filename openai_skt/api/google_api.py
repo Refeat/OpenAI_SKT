@@ -1,10 +1,16 @@
-import configparser
+import os
 
-config = configparser.ConfigParser()
-config.read('../.secrets.ini')
 try:
-    GOOGLE_SEARCH_KEY = config['GOOGLE']['GOOGLE_API_KEY']
-    CSE_ID = config['GOOGLE']['CSE_ID']
+    try:
+        GOOGLE_SEARCH_KEY = os.environ['GOOGLE_SEARCH_KEY']
+        CSE_ID = os.environ['CSE_ID']
+    except:
+        import configparser
+
+        config = configparser.ConfigParser()
+        config.read('../.secrets.ini')
+        GOOGLE_SEARCH_KEY = config['GOOGLE']['GOOGLE_API_KEY']
+        CSE_ID = config['GOOGLE']['CSE_ID']
 except:
     from django.conf import settings
     config = settings.KEY_INFORMATION
