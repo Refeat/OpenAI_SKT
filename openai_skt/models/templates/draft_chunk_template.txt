@@ -1,0 +1,11 @@
+I want you to look at the draft and extract a part that corresponds to the user's query.
+The extracted part should not differ from the original draft.
+The extracted part is organized in paragraph.
+Just say the extracted part. But if you don't have any, don't say anything and don't explain.
+
+draft:
+{draft}
+
+user query: {query}
+
+Extracted part:

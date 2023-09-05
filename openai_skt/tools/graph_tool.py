@@ -1,4 +1,4 @@
-from typing import Optional, Type
+from typing import Optional, Type, Any
 from pydantic import BaseModel
 
 from langchain.tools import BaseTool
@@ -14,25 +14,28 @@ class GraphTool(BaseTool):
     args_schema: Optional[Type[BaseModel]] = None
     """Pydantic model class to validate and parse the tool's input arguments."""
 
+    graph_chain: Any  # 클래스 변수로 선언
+    python_tool: Any  # 클래스 변수로 선언
+
     def __init__(self, graph_chain) -> None:
         super().__init__()
         self.graph_chain = graph_chain
         self.python_tool = PythonREPLTool()
 
-    def draw_graph(self, query) -> dict:
+    def _run(self, query) -> dict:
         result = self.graph_chain.run(query=query)
         code, save_path = self.parse_result(result)
         if save_path is not None:
-            result = self.python_tool.run(code=code)
+            result = self.python_tool._run(code)
             return save_path
         else:
             return None
     
-    async def async_draw_graph(self, query) -> dict:
+    async def _arun(self, query) -> dict:
         result = await self.graph_chain.arun(query=query)
         code, save_path = self.parse_result(result)
         if save_path is not None:
-            result = await self.python_tool.arun(code=code)
+            result = await self.python_tool._arun(code)
             return save_path
         else:
             return None

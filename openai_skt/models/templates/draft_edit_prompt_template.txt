@@ -11,12 +11,12 @@ Action Input: the input to the action
 Observation: the result of the action
 ... (this Thought/Action/Action Input/Observation can repeat N times)
 Thought: I now know the final answer
-Final Answer: the final answer to the original input question. The final answer must be Korean
+Final Answer: Modified part of the draft. The final answer must be in Korean.
 
 These were previous tasks you completed:
 {qna_history}
 
 Begin!
 
-Question: {input}
+Query: {input}
 Thought:{agent_scratchpad}

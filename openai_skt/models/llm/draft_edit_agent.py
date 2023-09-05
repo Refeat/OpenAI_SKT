@@ -54,14 +54,13 @@ class CustomOutputParser(AgentOutputParser):
     
 class DraftEditAgent:
     # TODO: Database 객체로 선언 안하는 방법이 있는지 생각
-    def __init__(self, database, draft_edit_prompt_path='../openai_skt/models/templates/draft_edit_prompt_template.txt', verbose=False) -> None:
+    def __init__(self, tools, draft_edit_prompt_path='../openai_skt/models/templates/draft_edit_prompt_template.txt', verbose=False) -> None:
         with open(draft_edit_prompt_path, 'r') as f:
             self.draft_edit_prompt_template = f.read()
         
-        self.database = database
         self.output_parser = CustomOutputParser()
         self.verbose = verbose
-        self.tools = [DatabaseTool(database=self.database)]
+        self.tools = tools
 
         self.draft_edit_prompt = CustomPromptTemplate(
             template=self.draft_edit_prompt_template,

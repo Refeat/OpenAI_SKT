@@ -84,15 +84,15 @@ class DraftChunkChain(BaseChain):
                 draft_chunk_template=None, 
                 input_variables:List[str]=None,
                 draft_chunk_template_path='../openai_skt/models/templates/draft_chunk_prompt.json', 
-                model='gpt-3.5-turbo', 
+                model='gpt-3.5-turbo-16k', 
                 verbose=False) -> None:
         super().__init__(template=draft_chunk_template, input_variables=input_variables, template_path=draft_chunk_template_path, model=model, verbose=verbose)
 
-    def run(self, draft:str=None, table:str=None, query:str=None):
-        return super().run(draft=draft, query=query, table=table)
+    def run(self, draft:str=None, query:str=None):
+        return super().run(draft=draft, query=query)
     
-    async def arun(self, draft:str=None, table:str=None, query:str=None):
-        return await super().arun(draft=draft, query=query, table=table)
+    async def arun(self, draft:str=None, query:str=None):
+        return await super().arun(draft=draft, query=query)
     
 class GraphChain(BaseChain):
     def __init__(self, 
