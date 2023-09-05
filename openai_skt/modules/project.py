@@ -14,7 +14,7 @@ except:
 
 import json
 import asyncio
-from typing import List
+from typing import List, Dict
 
 from database.database import DataBase
 from utils import time_logger, async_time_logger
@@ -58,7 +58,7 @@ class Project:
         if table is not None:
             self.table = table
             
-    def set_files(self, files:dict[str, List[dict[str, str]]]=None):
+    def set_files(self, files:Dict[str, List[Dict[str, str]]]=None):
         if files is not None:
             self.files = files
     
@@ -93,7 +93,7 @@ class Project:
                 search_tool=None,
                 purpose:str=None,
                 table:str=None,
-                files:dict[str, List[dict[str, str]]]=None,
+                files:Dict[str, List[Dict[str, str]]]=None,
                 keywords:List[str]=None):
         project = cls(project_id, table_generator_instance, keywords_generator_instance, draft_generator_instance, search_tool)
         project.set_purpose(purpose)

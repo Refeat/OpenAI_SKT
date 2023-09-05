@@ -1,0 +1,5 @@
+{
+    "_type": "prompt",
+    "input_variables": ["graph_to_draw"],
+    "template_path": "../openai_skt/models/templates/graph_prompt_template.txt"
+}
