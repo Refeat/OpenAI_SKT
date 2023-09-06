@@ -108,3 +108,18 @@ class GraphChain(BaseChain):
     
     async def arun(self,query:str=None):
         return await super().arun(graph_to_draw=query)
+    
+class SummaryChunkChain(BaseChain):
+    def __init__(self, 
+                summary_chunk_template=None, 
+                input_variables:List[str]=None,
+                summary_chunk_template_path='../openai_skt/models/templates/summary_chunk_prompt.json', 
+                model='gpt-3.5-turbo-16k', 
+                verbose=False) -> None:
+        super().__init__(template=summary_chunk_template, input_variables=input_variables, template_path=summary_chunk_template_path, model=model, verbose=verbose)
+
+    def run(self, summary:str=None, query:str=None):
+        return super().run(summary=summary, query=query)
+    
+    async def arun(self, summary:str=None, query:str=None):
+        return await super().arun(summary=summary, query=query)

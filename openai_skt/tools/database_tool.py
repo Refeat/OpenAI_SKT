@@ -7,10 +7,8 @@ from database.database import DataBase
 
 class DatabaseTool(BaseTool):
     name = "database"
-    description = "A tool to extract data from a database with a query"
-    args_schema: Optional[Type[BaseModel]] = None
-    """Pydantic model class to validate and parse the tool's input arguments."""
-    database: DataBase
+    description = "A tool to get data with a input question. Input should be a fully formed question in Korean."
+    database: DataBase= None
 
     def __init__(self) -> None:
         super().__init__()
@@ -19,9 +17,15 @@ class DatabaseTool(BaseTool):
         self.database = database
 
     def _run(self, query) -> dict:
-        result = self.database.query(query)
-        return result
+        chunks = self.database.query(query)
+        data = ''
+        for idx, chunk in enumerate(chunks):
+            data += f'chunk{idx+1}: {chunk.data}\n'
+        return data
     
     async def _arun(self, query) -> dict:
-        result = self.database.query(query)
-        return result
+        chunks = self.database.query(query)
+        data = ''
+        for idx, chunk in enumerate(chunks):
+            data += f'{idx} chunk: {chunk.data}\n'
+        return data

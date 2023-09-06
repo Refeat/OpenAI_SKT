@@ -6,7 +6,7 @@ from langchain.tools.python.tool import PythonREPLTool
 
 class GraphTool(BaseTool):
     name = "graph_tool"
-    description = "A tool to draw a graph. It return image path of the graph."
+    description = "A tool to draw a graph. The inputs are the table containing the data and the features of the graph you want to draw. It return image path of the graph."
     args_schema: Optional[Type[BaseModel]] = None
     """Pydantic model class to validate and parse the tool's input arguments."""
 

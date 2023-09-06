@@ -4,7 +4,11 @@ from api import KostatAPI, GallupAPI, YoutubeAPI, GoogleSearchAPI, NaverSearchAP
 class SearchTool:
     category_api_dict = {
         'all': [KostatAPI(), GallupAPI(), YoutubeAPI(), GoogleSearchAPI(), NaverSearchAPI()],
-        'statistics': [KostatAPI()],
+        'kostat': [KostatAPI()],
+        'gallup': [GallupAPI()],
+        'youtube': [YoutubeAPI()],
+        'google': [GoogleSearchAPI()],
+        'naver': [NaverSearchAPI()],
         # TODO: Add more APIs
     }
     def __init__(self) -> None:

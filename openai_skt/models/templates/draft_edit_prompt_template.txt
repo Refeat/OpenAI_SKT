@@ -12,7 +12,7 @@ Action Input: the input to the action
 Observation: the result of the action
 ... (this Thought/Action/Action Input/Observation can repeat N times)
 Thought: I now know the final answer
-Final Answer: Modified part of the draft. The final answer must be in Korean.
+Final Answer: Just say the modified draft. But if you don't have any, don't say anything and don't explain.
 
 Begin!
 

@@ -3,8 +3,6 @@ from pydantic import BaseModel
 
 from langchain.tools import BaseTool
 
-from models.llm.chain import DraftChunkChain
-
 class DraftChunkTool(BaseTool):
     name = "draft_chunk_tool"
     description = "A tool to extract a part of draft that corresponds to the user's query."
