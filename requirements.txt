@@ -12,3 +12,4 @@ selenium
 plotly
 kaleido
 webdriver_manager
+google-search-results

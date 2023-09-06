@@ -118,8 +118,8 @@ class SummaryChunkChain(BaseChain):
                 verbose=False) -> None:
         super().__init__(template=summary_chunk_template, input_variables=input_variables, template_path=summary_chunk_template_path, model=model, verbose=verbose)
 
-    def run(self, summary:str=None, query:str=None):
-        return super().run(summary=summary, query=query)
+    def run(self, chunk:str=None, question:str=None):
+        return super().run(document=chunk, question=question)
     
-    async def arun(self, summary:str=None, query:str=None):
-        return await super().arun(summary=summary, query=query)
+    async def arun(self,chunk:str=None, question:str=None):
+        return await super().arun(document=chunk, question=question)
