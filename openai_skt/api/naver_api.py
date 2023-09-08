@@ -1,13 +1,19 @@
-import asyncio
-from api.base import BaseAPI
+import os
 import requests
-import configparser
+import asyncio
 
-config = configparser.ConfigParser()
-config.read('../.secrets.ini')
+from api.base import BaseAPI
+
 try:
-    NAVER_CLIENT_ID = config['NAVER']['NAVER_CLIENT_ID']
-    NAVER_CLIENT_SECRET = config['NAVER']['NAVER_CLIENT_SECRET']
+    try:
+        NAVER_CLIENT_ID = os.environ['NAVER_CLIENT_ID']
+        NAVER_CLIENT_SECRET = os.environ['NAVER_CLIENT_SECRET']
+    except:
+        import configparser
+        config = configparser.ConfigParser()
+        config.read('../.secrets.ini')
+        NAVER_CLIENT_ID = config['NAVER']['NAVER_CLIENT_ID']
+        NAVER_CLIENT_SECRET = config['NAVER']['NAVER_CLIENT_SECRET']
 except:
     from django.conf import settings
     config = settings.KEY_INFORMATION

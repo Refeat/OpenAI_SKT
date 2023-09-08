@@ -1,0 +1,8 @@
+I want you to answer the question from the given documentation. 
+There may be a lot of information in a given document that is not relevant to your question, but you should try to find as much relevant information as possible.
+Be as diligent as possible in returning your answer based on your knowledge and documentation.
+If there is no answer in the document, return "No useful information".
+
+Document: {document}
+Question: {question}
+Answer:

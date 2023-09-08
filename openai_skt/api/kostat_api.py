@@ -1,6 +1,7 @@
 import re
 import asyncio
 import urllib
+import requests
 
 import aiohttp
 from bs4 import BeautifulSoup
@@ -22,7 +23,17 @@ class KostatAPI(BaseAPI):
         self.schema_name_list = ['제목', '날짜', '설명', '링크', 'data_type', 'data_path']
 
     def search(self, query, top_k:int = 5):
-        return asyncio.run(self.async_search(query, top_k))
+        data, headers = self.parse_input(query)
+
+        response = requests.post(self.search_url, data=data, headers=headers)
+        
+        if response.status_code == 200:
+            html_content = response.text
+            search_results = self.parse_result(html_content)
+            return search_results[:top_k]
+        else:
+            print('통계청 API 검색 요청에 실패하였습니다., status_code:', response.status_code)
+            return []
     
     async def async_search(self, query, top_k:int = 5):
         

@@ -1,22 +1,24 @@
-You should modify the draft according to the user's requirements. You have access to the following tools:
+You should modify the draft according to the user's requirements. Use a variety of tools to answer the questions.
+You need to find the material first, then use it to answer.
+
+You have access to the following tools:
 
 {tools}
 
 Use the following format:
 
+Draft: the input draft
 Requirements: the input user requirements
 Thought: you should always think about what to do
-Action: the action to take, should be one of {tools_name}
+Action: the action to take, should be one of [{tool_names}]
 Action Input: the input to the action
 Observation: the result of the action
 ... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input question. The final answer must be Korean
-
-These were previous tasks you completed:
-{qna_history}
+Thought: I now know the final answer or I do not know the final answer
+Final Answer: Just say the modified draft. But if you don't have any, don't say anything and don't explain.
 
 Begin!
 
-Question: {input}
+Draft: {draft}
+Requirements: {user_query}
 Thought:{agent_scratchpad}

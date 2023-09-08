@@ -3,13 +3,22 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read('../.secrets.ini')
-openai_api_key = config['OPENAI']['OPENAI_API_KEY']
-os.environ.update({'OPENAI_API_KEY': openai_api_key})
+OPENAI_API_KEY = config['OPENAI']['OPENAI_API_KEY']
+YOUTUBE_KEY = config['YOUTUBE']['YOUTUBE_API_KEY']
+NAVER_CLIENT_ID = config['NAVER']['NAVER_CLIENT_ID']
+NAVER_CLIENT_SECRET = config['NAVER']['NAVER_CLIENT_SECRET']
+GOOGLE_SEARCH_KEY = config['GOOGLE']['GOOGLE_API_KEY']
+CSE_ID = config['GOOGLE']['CSE_ID']
 
-import json
+os.environ.update({'OPENAI_API_KEY': OPENAI_API_KEY})
+os.environ.update({'YOUTUBE_KEY': YOUTUBE_KEY})
+os.environ.update({'NAVER_CLIENT_ID': NAVER_CLIENT_ID})
+os.environ.update({'NAVER_CLIENT_SECRET': NAVER_CLIENT_SECRET})
+os.environ.update({'GOOGLE_SEARCH_KEY': GOOGLE_SEARCH_KEY})
+os.environ.update({'CSE_ID': CSE_ID})
+
 import time
 import asyncio
-import logging
 from typing import List
 
 from tools.search_tool import SearchTool

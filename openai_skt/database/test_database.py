@@ -12,14 +12,15 @@ import database.loader
 import threading
 from time import time
 
+embed_chain = EmbedChain(config=AppConfig())
 class DataBase:
     # db = DataBase([(path1, type1), (path2, type2), ...]) 으로 선언
     # db[x][y] <- db의 x번째 data, 그 데이터의 y번째 chunk 반환
     thread_num = 5
     semaphore = threading.Semaphore(thread_num)
-    def __init__(self, files:List[tuple], embed_chain:EmbedChain):
+    def __init__(self, files:List[tuple]):
         # self.embed_chain = EmbedChain(config=AppConfig())
-        self.set_embed_chain(embed_chain)
+        self.embed_chain = embed_chain
         self.data = {}
         self.chunks = {}
         self.where = None
@@ -29,7 +30,7 @@ class DataBase:
         self.update_where()
     
     @classmethod
-    def load(cls, database_path, embed_chain:EmbedChain):
+    def load(cls, database_path):
         if os.path.exists(database_path):
             with open(database_path, 'r', encoding='utf-8') as f:
                 file_content = f.read()  # 파일의 내용을 문자열로 읽어옴
@@ -37,30 +38,26 @@ class DataBase:
 
             files = []
             for item in data['data']:
-                if item['data_type'] == 'web_page':
-                    files.append((item['data_path'], item['data_type']))
+                files.append((item['data_path'], item['data_type']))
 
             # data_path와 data_type을 결합하여 files 리스트 생성
-            return cls(files=files, embed_chain=embed_chain)
+            return cls(files=files)
         else:
-            return cls(files=[], embed_chain=embed_chain)
-
-    def set_embed_chain(self, embed_chain:EmbedChain):
-        self.embed_chain = embed_chain
+            return cls(files=[])
 
     def add(self, filepath: str, data_type: str):
-        try:
-            hash_id = self.embed_chain.add(filepath, data_type)
-            db_ids = list(self.embed_chain.db.get([], {'hash': hash_id}))
-            parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas", "embeddings"])
-            self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
-            self.update_where()
-            self.update_token_num()
-        except:
-            print(filepath, 'has no data')
-            return
-        finally:
-            self.semaphore.release()
+        # try:
+        hash_id = self.embed_chain.add(filepath, data_type)
+        db_ids = list(self.embed_chain.db.get([], {'hash': hash_id}))
+        parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas", "embeddings"])
+        self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
+        self.update_where()
+        self.update_token_num()
+        # except:
+        #     print(filepath, 'has no data')
+        #     return
+        # finally:
+        self.semaphore.release()
 
     def update_token_num(self):
         self.token_num = 0
