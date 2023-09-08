@@ -1,3 +1,4 @@
+import asyncio
 from api.base import BaseAPI
 import requests
 import configparser
@@ -39,11 +40,12 @@ class NaverSearchAPI(BaseAPI):
             else:
                 retries += 1
                 # Optionally, you can add a delay here if required
-                # await asyncio.sleep(1)
+                await asyncio.sleep(1)
 
         # If we reach here, it means we exhausted all our retries
         # You can either return an error, raise an exception, etc.
         print("Rate limit exceeded after maximum retries.")
+        return []
 
     def _naver_search(self, query, top_k):
         headers = {

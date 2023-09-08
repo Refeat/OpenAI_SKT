@@ -80,7 +80,7 @@ class GallupAPI(BaseAPI):
                 # '날짜': date,
                 # '첨부파일': file_link,
                 # '링크': url,
-                'desripction': title,
+                'description': title,
                 'data_type': 'pdf_file',
                 'data_path': file_link
             }

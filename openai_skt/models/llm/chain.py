@@ -17,7 +17,8 @@ class KeywordsChain:
         else:
             self.keywords_template_path = keywords_template_path
             self.keywords_prompt = load_prompt(self.keywords_template_path)
-        self.llm = ChatOpenAI(model="gpt-4", temperature=0.0)
+        # self.llm = ChatOpenAI(model="gpt-4", temperature=0.0)
+        self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.0)
         self.verbose = verbose
         self.keywords_chain = LLMChain(llm=self.llm, prompt=self.keywords_prompt, verbose=self.verbose)
 
@@ -65,7 +66,8 @@ class TableChain:
         else:
             self.table_template_path = table_template_path
             self.table_prompt = load_prompt(self.table_template_path)
-        self.llm = ChatOpenAI(model="gpt-4", temperature=0.0)
+        # self.llm = ChatOpenAI(model="gpt-4", temperature=0.0)
+        self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.0)
         self.verbose = verbose
         self.table_chain = LLMChain(llm=self.llm, prompt=self.table_prompt, verbose=self.verbose)
 

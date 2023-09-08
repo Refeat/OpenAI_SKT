@@ -14,7 +14,7 @@ except:
 
 import json
 import asyncio
-from typing import List
+from typing import List, Dict
 
 from database.database import DataBase
 from utils import time_logger, async_time_logger
@@ -58,7 +58,7 @@ class Project:
         if table is not None:
             self.table = table
             
-    def set_files(self, files:dict[str, List[dict[str, str]]]=None):
+    def set_files(self, files:Dict[str, List[Dict[str, str]]]=None):
         if files is not None:
             self.files = files
     
@@ -93,7 +93,7 @@ class Project:
                 search_tool=None,
                 purpose:str=None,
                 table:str=None,
-                files:dict[str, List[dict[str, str]]]=None,
+                files:Dict[str, List[Dict[str, str]]]=None,
                 keywords:List[str]=None):
         project = cls(project_id, table_generator_instance, keywords_generator_instance, draft_generator_instance, search_tool)
         project.set_purpose(purpose)
@@ -132,9 +132,10 @@ class Project:
     def parse_files_to_embedchain(self):
         # {'api_name':[{},{}]]}
         files = []
-        
+        print(self.files)
         for api_name, files_of_api in self.files.items(): # api_name: kostat, files_of_api: [{'제목':'IMF', '내용':'IMF 내용'}]
             for file in files_of_api:
+                print(file)
                 data_path, data_type = file['data_path'], file['data_type']
                 files.append((data_path, data_type))
                 # self.database.add(data_path, data_type)
@@ -164,7 +165,8 @@ class Project:
     
     @async_time_logger
     async def async_search_keywords(self):
-        tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
+        # tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
+        tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords[:1]] # TODO: 여기 테스트용으로 1개만
         results = await asyncio.gather(*tasks)
 
         files = {}
@@ -174,7 +176,8 @@ class Project:
                     if api_name not in files:
                         files[api_name] = []
                     files[api_name].append(info)
-                    
+        with open('/home/ubuntu/chat_profile/writer/openai_skt/tools/result_dict.txt', 'w', encoding='utf-8') as f:
+            f.write(str(files))
         self.files = files
         return files
 
