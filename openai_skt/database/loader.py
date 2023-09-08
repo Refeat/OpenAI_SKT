@@ -100,8 +100,6 @@ class WebdriverQueue:
             time.sleep(1)
             # Wait or retry if the queue is full
 
-# webdrivers = WebdriverQueue(5)
-
 def webpage_load_loading_fix(self, url):
         """Load data from a web page using Selenium."""
         
@@ -226,4 +224,100 @@ def webpage_load_loading_fix(self, url):
             }
         ]
 
+# webdrivers = WebdriverQueue(5)
 # WebPageLoader.load_data = webpage_load_loading_fix
+
+import logging
+import requests
+from bs4 import BeautifulSoup
+from embedchain.loaders.base_loader import BaseLoader
+from embedchain.utils import clean_string
+
+# import re
+
+# def clean_string(text):
+#     """
+#     This function takes in a string and performs a series of text cleaning operations.
+
+#     Args:
+#         text (str): The text to be cleaned. This is expected to be a string.
+
+#     Returns:
+#         cleaned_text (str): The cleaned text after all the cleaning operations
+#         have been performed.
+#     """
+    
+#     # Merge operations:
+#     # 1. Replace newline characters and backslashes.
+#     # 2. Replace hash characters.
+#     # 3. Strip and reduce multiple spaces to single.
+#     # 4. Eliminate consecutive non-alphanumeric characters.
+#     cleaned_text = re.sub(r"\s+", " ", text.replace("\n", " ").replace("\\", "").replace("#", " ")).strip()
+#     cleaned_text = re.sub(r"([^\w\s])\1*", r"\1", cleaned_text)
+
+#     return cleaned_text
+
+
+def optimized_load_data(self, url):
+        """Load data from a web page."""
+        response = requests.get(url)
+        data = response.content
+        soup = BeautifulSoup(data, "lxml")
+        original_size = len(str(soup.get_text()))
+
+        tags_to_exclude = [
+            "nav",
+            "aside",
+            "form",
+            "header",
+            "noscript",
+            "svg",
+            "canvas",
+            "footer",
+            "script",
+            "style",
+        ]
+        for tag in soup(tags_to_exclude):
+            tag.decompose()
+
+        ids_to_exclude = ["sidebar", "main-navigation", "menu-main-menu"]
+        for id in ids_to_exclude:
+            tags = soup.find_all(id=id)
+            for tag in tags:
+                tag.decompose()
+
+        classes_to_exclude = [
+            "elementor-location-header",
+            "navbar-header",
+            "nav",
+            "header-sidebar-wrapper",
+            "blog-sidebar-wrapper",
+            "related-posts",
+        ]
+        for class_name in classes_to_exclude:
+            tags = soup.find_all(class_=class_name)
+            for tag in tags:
+                tag.decompose()
+
+        content = soup.get_text()
+        content = clean_string(content)
+
+        cleaned_size = len(content)
+        if original_size != 0:
+            logging.info(
+                f"[{url}] Cleaned page size: {cleaned_size} characters, down from {original_size} (shrunk: {original_size-cleaned_size} chars, {round((1-(cleaned_size/original_size)) * 100, 2)}%)"  # noqa:E501
+            )
+
+        meta_data = {
+            "url": url,
+        }
+
+        return [
+            {
+                "content": content,
+                "meta_data": meta_data,
+            }
+        ]
+
+
+WebPageLoader.load_data = optimized_load_data

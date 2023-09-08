@@ -13,3 +13,5 @@ plotly
 kaleido
 webdriver_manager
 google-search-results
+scrapy
+twisted

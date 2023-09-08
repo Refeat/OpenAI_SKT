@@ -2,17 +2,17 @@ import os
 
 try:
     try:
-        SERPAPI_KEY = os.environ['SERPAPI_KEY']
+        SERPAPI_KEY = os.environ['SERPAPI_API_KEY']
     except:
         import configparser
 
         config = configparser.ConfigParser()
         config.read('../.secrets.ini')
-        SERPAPI_KEY = config['SERPAPI']['SERPAPI_KEY']
+        SERPAPI_KEY = config['SERPAPI']['SERPAPI_API_KEY']
 except:
     from django.conf import settings
     config = settings.KEY_INFORMATION
-    SERPAPI_KEY = config['SERPAPI']['SERPAPI_KEY']
+    SERPAPI_KEY = config['SERPAPI']['SERPAPI_API_KEY']
     
 import requests
 import aiohttp

@@ -37,7 +37,8 @@ class DataBase:
 
             files = []
             for item in data['data']:
-                files.append((item['data_path'], item['data_type']))
+                if item['data_type'] == 'web_page':
+                    files.append((item['data_path'], item['data_type']))
 
             # data_path와 data_type을 결합하여 files 리스트 생성
             return cls(files=files, embed_chain=embed_chain)
