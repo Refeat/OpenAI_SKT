@@ -45,6 +45,15 @@ class DataBase:
         else:
             return cls(files=[], embed_chain=embed_chain)
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        # sqlite3.Connection 같은 객체가 있으면 여기서 제거
+        state['embed_chain'] = None
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
     def set_embed_chain(self, embed_chain:EmbedChain):
         self.embed_chain = embed_chain
 

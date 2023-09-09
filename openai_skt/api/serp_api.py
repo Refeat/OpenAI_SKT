@@ -29,11 +29,11 @@ class SerpApiSearch(BaseAPI):
 
     def search(self, query: str, top_k: int = 5):
         response = self._serpapi_search(query, top_k)
-        return self.parse_result(response)[:top_k]
+        return self.parse_result(response)
 
     async def async_search(self, query: str, top_k: int = 5):
         response = await self._serpapi_search_async(query, top_k)
-        return self.parse_result(response)[:top_k]
+        return self.parse_result(response)
 
     def _serpapi_search(self, query, top_k):
         try:
@@ -54,7 +54,8 @@ class SerpApiSearch(BaseAPI):
             params = {
                 "q": query,
                 "engine": "google",
-                "api_key": self.api_key
+                "api_key": self.api_key,
+                "num": top_k
             }
             async with aiohttp.ClientSession() as session:
                 async with session.get(self.base_url, params=params) as response:
