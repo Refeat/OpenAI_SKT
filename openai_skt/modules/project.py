@@ -142,9 +142,10 @@ class Project:
     def parse_files_to_embedchain(self):
         # {'api_name':[{},{}]]}
         files = []
-        
+        print(self.files)
         for api_name, files_of_api in self.files.items(): # api_name: kostat, files_of_api: [{'제목':'IMF', '내용':'IMF 내용'}]
             for file in files_of_api:
+                print(file)
                 data_path, data_type = file['data_path'], file['data_type']
                 files.append((data_path, data_type))
                 # self.database.add(data_path, data_type)
@@ -177,7 +178,8 @@ class Project:
         return files
     
     async def async_search_keywords(self):
-        tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
+        # tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
+        tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords[:1]] # TODO: 여기 테스트용으로 1개만
         results = await asyncio.gather(*tasks)
 
         files = {}
@@ -187,7 +189,8 @@ class Project:
                     if api_name not in files:
                         files[api_name] = []
                     files[api_name].append(info)
-                    
+        with open('/home/ubuntu/chat_profile/writer/openai_skt/tools/result_dict.txt', 'w', encoding='utf-8') as f:
+            f.write(str(files))
         self.files = files
         return files
 
