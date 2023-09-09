@@ -16,6 +16,6 @@ Final Answer: the final answer to the input question. The final answer must be K
 
 Begin!
 
-{chat_history}
+{qna_history}
 Question: {input}
 Thought:{agent_scratchpad}

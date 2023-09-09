@@ -8,6 +8,7 @@ from langchain.tools import BaseTool
 from bs4 import BeautifulSoup
 
 from api import KostatAPI, GallupAPI, YoutubeAPI, GoogleSearchAPI, NaverSearchAPI, SerpApiSearch
+from models.llm import SummaryChunkChain
 
 class SearchToolInputSchema(BaseModel):
     query: str
@@ -32,9 +33,9 @@ class SearchTool(BaseTool):
     summary_chunk_chain: Any = None
     search_by_url_tool: Any = None
 
-    def __init__(self, summary_chunk_chain=None, search_by_url_tool=None) -> None:
+    def __init__(self, search_by_url_tool=None) -> None:
         super().__init__()
-        self.summary_chunk_chain = summary_chunk_chain
+        self.summary_chunk_chain = SummaryChunkChain(verbose=True)
         self.search_by_url_tool = search_by_url_tool
 
     def search(self, query, category='all', top_k=5):
@@ -73,7 +74,7 @@ class SearchTool(BaseTool):
 
 
     def _run(self, query, question) -> dict:
-        search_result_list = self.search(query, category='naver', top_k=1)['naver_search']
+        search_result_list = self.search(query, category='google', top_k=1)['google_search']
         if len(search_result_list) == 0:
             return {
                 "status": "error",
@@ -84,7 +85,8 @@ class SearchTool(BaseTool):
         single_webpage_result = self.search_by_url_tool._run(url)
         if single_webpage_result['status'] == 'error':
             return single_webpage_result
-        single_webpage_content = single_webpage_result['content'][:3000]
+        single_webpage_content = single_webpage_result['content']
+        question = question if question else query
         summary_result = self.summary_chunk_chain.run(chunk=single_webpage_content, question=question)
         return summary_result
 

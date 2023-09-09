@@ -20,12 +20,7 @@ import json
 import asyncio
 from typing import List, Dict
 
-from embedchain.embedchain import EmbedChain
-from embedchain.config import AppConfig
-
 from database.database import DataBase
-
-embed_chain = EmbedChain(AppConfig())
 
 class Project:
     save_root_path = f"./user"
@@ -34,12 +29,15 @@ class Project:
                 table_generator_instance,
                 keywords_generator_instance,
                 draft_generator_instance,
-                search_tool) -> None:
+                qna_instance,
+                search_tool,
+                embed_chain) -> None:
         self.project_id = project_id
         self.purpose = None
         self.table = None
         self.keywords = None
         self.drafts = list() # [draft1, draft2, ...]
+        self.qna_history = list()
 
         self.files = dict() # {'통계청':[{'내용':, '경로':},{}]}, AI가 검색한 파일들
         self.database = DataBase(files=[], embed_chain=embed_chain)
@@ -51,7 +49,8 @@ class Project:
         self.table_generator_instance = table_generator_instance
         self.keywords_generator_instance = keywords_generator_instance
         self.draft_generator_instance = draft_generator_instance
-        # self.async_get_answer = None
+        self.qna_instance = qna_instance
+        
         self.search_tool = search_tool
     
     def set_purpose(self, purpose:str=None):
@@ -79,40 +78,88 @@ class Project:
         # type: ['web_page', 'youtube_video', 'pdf_file', 'text']
         self.database.add_files(files)
 
-    def init_instance(self, purpose=None, keywords=None, files:List[tuple]=None):
-        assert purpose is not None
-        self.purpose = purpose
-        self.keywords = keywords
-        self.database = DataBase(files=files, embed_chain=embed_chain)
-
-    def load_instance(self, user_instance_path:str=None):
-        assert user_instance_path is not None
-        with open(user_instance_path, "r") as f:
-            user_instance = json.load(f)
-        self.purpose = user_instance["purpose"]
-        self.keywords = user_instance["keywords"]
-        self.database_path = user_instance["database_path"]
-        self.database = DataBase.load(database_path=self.database_path)
+    @classmethod
+    def load_from_file(cls, 
+                    table_generator_instance,
+                    keywords_generator_instance,
+                    draft_generator_instance,
+                    qna_instance,
+                    search_tool,
+                    embed_chain,
+                    user_instance_path,
+                    project_id=None):
+        # TODO: JSON뿐아니라 pkl로 저장하는 것 구현
+        # Check that mandatory variables are not None
+        if not table_generator_instance:
+            raise ValueError("`table_generator_instance` must not be None.")
+        if not keywords_generator_instance:
+            raise ValueError("`keywords_generator_instance` must not be None.")
+        if not draft_generator_instance:
+            raise ValueError("`draft_generator_instance` must not be None.")
+        if not qna_instance:
+            raise ValueError("`qna_instance` must not be None.")
+        if not search_tool:
+            raise ValueError("`search_tool` must not be None.")
+        if not embed_chain:
+            raise ValueError("`embed_chain` must not be None.")
+        if not user_instance_path:
+            raise ValueError("`user_instance_path` must not be None.")
+        file_extension = os.path.splitext(user_instance_path)[1]
         
-    def load_database(self):
-        self.database = DataBase.load(database_path=self.database_path, embed_chain=embed_chain)
+
+        file_extension = os.path.splitext(user_instance_path)[1]
+        if os.path.exists(user_instance_path):
+            if file_extension == '.json':
+                with open(user_instance_path, "r", encoding='utf-8') as f:
+                    user_instance = json.load(f)
+                # project_id = user_instance["project_id"]
+                project_id = project_id
+                purpose = user_instance["purpose"]
+                keywords = user_instance["keywords"]
+                database_path = user_instance["database_path"]
+                project = cls(project_id, table_generator_instance, keywords_generator_instance, draft_generator_instance, qna_instance, search_tool, embed_chain)
+                project.set_purpose(purpose)
+                # project.set_table(table)
+                project.set_keywords(keywords)
+                # project.set_files(files)
+                project.load_database(database_path, embed_chain)
+                return project
+        
+    def load_database(self, database_path, embed_chain):
+        self.database = DataBase.load(database_path=database_path, embed_chain=embed_chain)
     
     @classmethod
-    def load(cls, project_id=None,
-                table_generator_instance=None,
-                keywords_generator_instance=None,
-                draft_generator_instance=None,
-                search_tool=None,
-                purpose:str=None,
-                table:str=None,
-                files:Dict[str, List[Dict[str, str]]]=None,
-                keywords:List[str]=None):
-        project = cls(project_id, table_generator_instance, keywords_generator_instance, draft_generator_instance, search_tool)
+    def load(cls, 
+            table_generator_instance,
+            keywords_generator_instance,
+            draft_generator_instance,
+            qna_instance,
+            search_tool,
+            embed_chain,
+            project_id=None,
+            purpose:str=None,
+            table:str=None,
+            files:Dict[str, List[Dict[str, str]]]=None,
+            keywords:List[str]=None):
+        # Check that mandatory variables are not None
+        if not table_generator_instance:
+            raise ValueError("`table_generator_instance` must not be None.")
+        if not keywords_generator_instance:
+            raise ValueError("`keywords_generator_instance` must not be None.")
+        if not draft_generator_instance:
+            raise ValueError("`draft_generator_instance` must not be None.")
+        if not qna_instance:
+            raise ValueError("`qna_instance` must not be None.")
+        if not search_tool:
+            raise ValueError("`search_tool` must not be None.")
+        if not embed_chain:
+            raise ValueError("`embed_chain` must not be None.")
+        project = cls(project_id, table_generator_instance, keywords_generator_instance, draft_generator_instance, qna_instance, search_tool, embed_chain)
         project.set_purpose(purpose)
         project.set_table(table)
         project.set_keywords(keywords)
         project.set_files(files)
-        project.load_database()
+        project.load_database(project.database_path, embed_chain)
         return project
 
     def save_instance(self):        
@@ -133,6 +180,7 @@ class Project:
 
     def to_dict(self):
         return {
+            "project_id": self.project_id,
             "purpose": self.purpose,
             "keywords": self.keywords,
             "database_path": self.database_path,
@@ -142,10 +190,8 @@ class Project:
     def parse_files_to_embedchain(self):
         # {'api_name':[{},{}]]}
         files = []
-        print(self.files)
         for api_name, files_of_api in self.files.items(): # api_name: kostat, files_of_api: [{'제목':'IMF', '내용':'IMF 내용'}]
             for file in files_of_api:
-                print(file)
                 data_path, data_type = file['data_path'], file['data_type']
                 files.append((data_path, data_type))
                 # self.database.add(data_path, data_type)
@@ -178,8 +224,7 @@ class Project:
         return files
     
     async def async_search_keywords(self):
-        # tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
-        tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords[:1]] # TODO: 여기 테스트용으로 1개만
+        tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
         results = await asyncio.gather(*tasks)
 
         files = {}
@@ -189,7 +234,7 @@ class Project:
                     if api_name not in files:
                         files[api_name] = []
                     files[api_name].append(info)
-        with open('/home/ubuntu/chat_profile/writer/openai_skt/tools/result_dict.txt', 'w', encoding='utf-8') as f:
+        with open('./tools/result_dict.txt', 'w', encoding='utf-8') as f:
             f.write(str(files))
         self.files = files
         return files
@@ -224,15 +269,12 @@ class Project:
         self.drafts.append(draft)
         return draft
 
-    def get_answer(self, question:str=None):
-        answer = self.qna_instance.run(question=question, qna_history=self.qna_history)
-        if self.qna_history is None:
-            self.qna_history = [question, answer]
-        else:
-            self.qna_history.append([question, answer])
+    def get_qna_answer(self, question:str=None):
+        answer = self.qna_instance.run(database=self.database, question=question, qna_history=self.qna_history)
+        self.qna_history.append([question, answer])
         return answer
 
-    async def async_get_answer(self, question:str=None):
+    async def async_get_qna_answer(self, question:str=None):
         answer = await self.qna_instance.arun(question=question, qna_history=self.qna_history)
         if self.qna_history is None:
             self.qna_history = [question, answer]

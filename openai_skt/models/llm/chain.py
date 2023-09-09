@@ -1,8 +1,11 @@
 from typing import List
 
-from langchain.prompts import load_prompt, PromptTemplate
+from langchain.prompts import PromptTemplate
+from langchain.prompts.loading import load_prompt
 from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
+
+from models.llm import utils
 
 class BaseChain:
     def __init__(self, 
