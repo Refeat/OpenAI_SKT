@@ -45,7 +45,7 @@ class Project:
         self.database = DataBase(files=[], embed_chain=embed_chain)
         self.user_root_path = os.path.join(self.save_root_path, f"{self.project_id}")
         os.makedirs(self.user_root_path, exist_ok=True)
-        self.database_path = os.path.join(self.user_root_path, "database.json")
+        self.database_path = os.path.join(self.user_root_path, "database.pkl")
         self.user_instance_path = os.path.join(self.user_root_path, "user_instance.json")
 
         self.table_generator_instance = table_generator_instance

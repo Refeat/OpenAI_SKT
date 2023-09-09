@@ -1,7 +1,7 @@
 import os
 import json
 import asyncio
-import nest_asyncio
+import pickle
 from typing import List
 
 from embedchain.embedchain import EmbedChain
@@ -10,38 +10,45 @@ from embedchain.config import AppConfig
 from database.data import Data
 import database.loader
 import threading
-from time import time
 
 class DataBase:
     # db = DataBase([(path1, type1), (path2, type2), ...]) 으로 선언
     # db[x][y] <- db의 x번째 data, 그 데이터의 y번째 chunk 반환
-    thread_num = 5
+    thread_num = 2
     semaphore = threading.Semaphore(thread_num)
     def __init__(self, files:List[tuple], embed_chain:EmbedChain):
-        # self.embed_chain = EmbedChain(config=AppConfig())
         self.set_embed_chain(embed_chain)
         self.data = {}
         self.chunks = {}
         self.where = None
 
         self.multithread_add_files(files)
+        # self.add_files(files)
         self.update_token_num()
         self.update_where()
     
     @classmethod
     def load(cls, database_path, embed_chain:EmbedChain):
+        file_extension = os.path.splitext(database_path)[1]
+        
         if os.path.exists(database_path):
-            with open(database_path, 'r', encoding='utf-8') as f:
-                file_content = f.read()  # 파일의 내용을 문자열로 읽어옴
-                data = json.loads(file_content)
+            if file_extension == '.json':
+                with open(database_path, 'r', encoding='utf-8') as f:
+                    file_content = f.read()  # 파일의 내용을 문자열로 읽어옴
+                    data = json.loads(file_content)
 
-            files = []
-            for item in data['data']:
-                if item['data_type'] == 'web_page':
-                    files.append((item['data_path'], item['data_type']))
+                files = []
+                for item in data['data']:
+                    if item['data_type'] == 'web_page':
+                        files.append((item['data_path'], item['data_type']))
 
-            # data_path와 data_type을 결합하여 files 리스트 생성
-            return cls(files=files, embed_chain=embed_chain)
+                # data_path와 data_type을 결합하여 files 리스트 생성
+                return cls(files=files, embed_chain=embed_chain)
+            elif file_extension == '.pkl':
+                with open(database_path, 'rb') as f:
+                    database = pickle.load(f)
+                database.set_embed_chain(embed_chain)
+                return database
         else:
             return cls(files=[], embed_chain=embed_chain)
 
@@ -61,7 +68,7 @@ class DataBase:
         try:
             hash_id = self.embed_chain.add(filepath, data_type)
             db_ids = list(self.embed_chain.db.get([], {'hash': hash_id}))
-            parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas", "embeddings"])
+            parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas"])
             self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
             self.update_where()
             self.update_token_num()
@@ -133,10 +140,20 @@ class DataBase:
             self.where = {
                 "$or": [{'hash': hash_id} for hash_id in self.data.keys()]
             }
-    
-    def save(self, database_path:str):
-        with open(database_path, 'w', encoding='utf-8') as f:
-            json.dump(self.to_dict(), f, ensure_ascii=False, indent=4)
+
+    def save(self, database_path):
+        # Get file extension
+        file_extension = os.path.splitext(database_path)[1]
+        
+        # Check the file extension and save accordingly
+        if file_extension == '.json':
+            with open(database_path, 'w', encoding='utf-8') as f:
+                json.dump(self.to_dict(), f, ensure_ascii=False, indent=4)
+        elif file_extension == '.pkl':
+            with open(database_path, 'wb') as f:
+                pickle.dump(self, f)
+        else:
+            print(f"Unsupported file extension {file_extension}. Use .json or .pkl.")
 
     def to_dict(self):
         return {

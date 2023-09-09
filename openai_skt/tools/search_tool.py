@@ -20,8 +20,8 @@ class SearchTool(BaseTool):
         'kostat': [KostatAPI()],
         'gallup': [GallupAPI()],
         'youtube': [YoutubeAPI()],
-        # 'google': [GoogleSearchAPI()],
-        'google': [SerpApiSearch()],
+        'google': [GoogleSearchAPI()],
+        # 'google': [SerpApiSearch()],
         'naver': [NaverSearchAPI()],
         # TODO: Add more APIs
     }
