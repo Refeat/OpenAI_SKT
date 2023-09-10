@@ -179,7 +179,7 @@ class Project:
     
     async def async_search_keywords(self):
         # tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
-        tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords[:1]] # TODO: 여기 테스트용으로 1개만
+        tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
         results = await asyncio.gather(*tasks)
 
         files = {}

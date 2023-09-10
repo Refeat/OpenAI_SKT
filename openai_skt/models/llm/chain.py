@@ -39,7 +39,7 @@ class KeywordsChain(BaseChain):
                  keywords_template=None, 
                  input_variables:List[str]=None,
                  keywords_template_path='../openai_skt/models/templates/keywords_prompt.json', 
-                 model='gpt-3.5-turbo', 
+                 model='gpt-4', 
                  verbose=False) -> None:
         super().__init__(keywords_template, input_variables, keywords_template_path, model, verbose)
 
@@ -69,7 +69,7 @@ class TableChain(BaseChain):
                 table_template=None, 
                 input_variables:List[str]=None,
                 table_template_path='../openai_skt/models/templates/table_prompt.json', 
-                model='gpt-3.5-turbo', 
+                model='gpt-4', 
                 verbose=False) -> None:
         super().__init__(template=table_template, input_variables=input_variables, template_path=table_template_path, model=model, verbose=verbose)
 
