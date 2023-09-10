@@ -293,6 +293,7 @@ class Project:
         return keywords_files
     
     async def async_search_keywords(self):
+        # tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
         tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
         results = await asyncio.gather(*tasks)
 
