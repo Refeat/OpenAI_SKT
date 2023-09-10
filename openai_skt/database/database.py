@@ -39,8 +39,7 @@ class DataBase:
 
                 files = []
                 for item in data['data']:
-                    if item['data_type'] == 'web_page':
-                        files.append((item['data_path'], item['data_type']))
+                    files.append((item['data_path'], item['data_type']))
 
                 # data_path와 data_type을 결합하여 files 리스트 생성
                 return cls(files=files, embed_chain=embed_chain)
@@ -149,9 +148,11 @@ class DataBase:
         if file_extension == '.json':
             with open(database_path, 'w', encoding='utf-8') as f:
                 json.dump(self.to_dict(), f, ensure_ascii=False, indent=4)
+            print(f"saved database to {database_path}")
         elif file_extension == '.pkl':
             with open(database_path, 'wb') as f:
                 pickle.dump(self, f)
+            print(f"saved database to {database_path}")
         else:
             print(f"Unsupported file extension {file_extension}. Use .json or .pkl.")
 

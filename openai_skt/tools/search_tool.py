@@ -33,9 +33,12 @@ class SearchTool(BaseTool):
     summary_chunk_chain: Any = None
     search_by_url_tool: Any = None
 
-    def __init__(self, search_by_url_tool=None) -> None:
+    def __init__(self, search_by_url_tool, summary_chunk_chain=None) -> None:
         super().__init__()
-        self.summary_chunk_chain = SummaryChunkChain(verbose=True)
+        if summary_chunk_chain is None:
+            self.summary_chunk_chain = SummaryChunkChain(verbose=True)
+        else:
+            self.summary_chunk_chain = summary_chunk_chain
         self.search_by_url_tool = search_by_url_tool
 
     def search(self, query, category='all', top_k=5):

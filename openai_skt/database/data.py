@@ -2,6 +2,8 @@ from embedchain.embedchain import EmbedChain
 from typing import List, Dict
 import tiktoken
 
+tokenizer = tiktoken.get_encoding("cl100k_base")
+
 class Data:
     def __init__(self, hash_id:str, parsed_data:Dict, chunks_dict:Dict) -> None:
         self.hash = hash_id
@@ -53,7 +55,6 @@ class Chunk:
         self.data = data
         self.data_path = data_path
         self.data_type = data_type
-        tokenizer = tiktoken.get_encoding("cl100k_base")
         self.token_num = len(tokenizer.encode(self.data))
     
     def __str__(self) -> str:
@@ -70,3 +71,23 @@ class Chunk:
             'data_type': self.data_type,
             'token_num': self.token_num
         }
+    
+    @classmethod
+    def load(cls, chunk_dict):
+        id_db = chunk_dict['id']
+        data = chunk_dict['data']
+        data_path = chunk_dict['data_path']
+        data_type = chunk_dict['data_type']
+        token_num = chunk_dict['token_num']
+        chunk = cls(data_path=data_path, data_type=data_type, id_db=id_db, data=data)
+        chunk.token_num = token_num
+        return chunk
+
+    def __hash__(self) -> int:
+        return hash(self.id)
+    
+    def __eq__(self, o: object) -> bool:
+        if type(o) is Chunk:
+            return self.id == o.id
+        else:
+            return False

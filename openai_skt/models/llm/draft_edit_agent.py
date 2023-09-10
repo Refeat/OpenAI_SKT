@@ -2,18 +2,18 @@ import re
 from typing import List, Union
 
 from langchain import LLMChain, OpenAI
-from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser
+from langchain.agents import AgentExecutor, LLMSingleActionAgent, AgentOutputParser
 from langchain.prompts import StringPromptTemplate
 from langchain.schema import AgentAction, AgentFinish, OutputParserException
-
-from tools import DatabaseTool, DraftChunkTool, GraphTool
+from langchain.tools import BaseTool
+from langchain.chat_models import ChatOpenAI
 
 # Set up a prompt template
 class CustomPromptTemplate(StringPromptTemplate):
     # The template to use
     template: str
     # The list of tools available
-    tools: List[Tool]
+    tools: List[BaseTool]
 
     def format(self, **kwargs) -> str:
         # Get the intermediate steps (AgentAction, Observation tuples)
@@ -53,46 +53,43 @@ class CustomOutputParser(AgentOutputParser):
         return AgentAction(tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output)
     
 class DraftEditAgent:
-    # TODO: Database 객체로 선언 안하는 방법이 있는지 생각
-    def __init__(self, tools, draft_edit_prompt_path='../openai_skt/models/templates/draft_edit_prompt_template.txt', verbose=False) -> None:
+    def __init__(self, tools, draft_edit_prompt_path='../openai_skt/models/templates/draft_edit_prompt_template.txt', verbose=False, model='gpt-3.5-turbo-16k') -> None:
         with open(draft_edit_prompt_path, 'r') as f:
             self.draft_edit_prompt_template = f.read()
         
         self.output_parser = CustomOutputParser()
         self.verbose = verbose
-        self.tools = [DatabaseTool(), DraftChunkTool(), GraphTool()]
 
         self.draft_edit_prompt = CustomPromptTemplate(
             template=self.draft_edit_prompt_template,
-            tools=self.tools,
+            tools=tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because that is needed
             input_variables=["user_query", "draft", "intermediate_steps"]
         )
 
-        self.llm = OpenAI(temperature=0, verbose=self.verbose)
+        self.llm = ChatOpenAI(temperature=0, verbose=self.verbose)
         self.draft_edit_chain = LLMChain(llm=self.llm, prompt=self.draft_edit_prompt, verbose=self.verbose)
-        tool_names = [tool.name for tool in self.tools]
+        tool_names = [tool.name for tool in tools]
         self.agent = LLMSingleActionAgent(
             llm_chain=self.draft_edit_chain, 
             output_parser=self.output_parser,
             stop=["\nObservation:"], 
             allowed_tools=tool_names
         )
-        self.agent_executor = AgentExecutor.from_agent_and_tools(agent=self.agent, tools=self.tools, verbose=self.verbose)
 
-    def run(self, database, draft, query):
-        input_dict = self.parse_input(database, draft, query)
-        result = self.agent_executor.run(input_dict=input_dict)
+    def run(self, tools, draft:str, query):
+        input_dict = self.parse_input(draft, query)
+        agent_executor = AgentExecutor.from_agent_and_tools(agent=self.agent, tools=tools, verbose=self.verbose)
+        result = agent_executor.run(input_dict)
         return result
 
-    async def arun(self, database, draft, query):
-        input_dict = self.parse_input(database, draft, query)
-        result = await self.agent_executor.arun(input_dict=input_dict)
+    async def arun(self, tools, draft, query):
+        input_dict = self.parse_input(draft, query)
+        agent_executor = AgentExecutor.from_agent_and_tools(agent=self.agent, tools=tools, verbose=self.verbose)
+        result = await agent_executor.arun(input_dict)
         return result
     
-    def parse_input(self, database, draft, query):
-        database_tool = self.tools[0]
-        database_tool.set_database(database)
-        input_dict = {'user_query': query, 'draft': draft.text}
+    def parse_input(self, draft, query):
+        input_dict = {'user_query': query, 'draft': draft}
         return input_dict

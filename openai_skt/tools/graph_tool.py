@@ -6,7 +6,17 @@ from langchain.tools.python.tool import PythonREPLTool
 
 class GraphTool(BaseTool):
     name = "graph_tool"
-    description = "A tool to draw a graph. This tool simply converts the data you give it into a graph, so you'll need to enter a table in markdown form with your data and the characteristics of the graph you want to draw. It return image path of the graph."
+    description = """
+A tool to draw a graph. It return image path of the graph. This tool simply converts the data you give it into a graph, so you'll need to enter a table in markdown form with your data and the features of the graph you want to draw. The example of input is as follows:
+===
+Please plot the table below as a bar chart.
+| Properties | Information |
+|------------|-------------|
+| **Natural Language Processing Market Size in 2022** | $15.7 billion |
+| **Natural Language Processing Market Forecast 2032** | $144.9 Billion |
+| **Natural Language Processing Market CAGR from 2023 to 2032** | 25.1% |
+===
+    """
     args_schema: Optional[Type[BaseModel]] = None
     """Pydantic model class to validate and parse the tool's input arguments."""
 

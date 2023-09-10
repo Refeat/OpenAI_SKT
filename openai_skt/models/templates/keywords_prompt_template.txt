@@ -1,6 +1,7 @@
 Generate search queries to research material for post.
 Generate search queries based on the purpose and table of contents of the article given as input.
 Each search query will be used to search for data on Google, YouTube, etc.
+The search query should be specific.
 Each search query consists of a few words.
 Just say the search query. But if you don't have any, don't say anything and don't explain.
 Each search query is in no particular order and is separated by commas.
@@ -16,4 +17,4 @@ table of contents:
 {table}
 ===
 
-keyword quries:
+search queries:

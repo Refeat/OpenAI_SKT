@@ -1,7 +1,7 @@
 import re
 from typing import List, Union
 
-from langchain import LLMChain, OpenAI
+from langchain import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser
 from langchain.prompts import StringPromptTemplate

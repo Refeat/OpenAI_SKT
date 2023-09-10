@@ -8,17 +8,17 @@ class DraftGeneratorInstance:
     def __init__(self, verbose=False) -> None:
         self.draft_chain = DraftChain(verbose=verbose)
 
-    def run(self, purpose:str=None, table:str=None, database=None) -> Draft:
+    def run(self, purpose:str=None, table:str=None, database=None, draft_id=None) -> Draft:
         table_list = self.parse_table(table)
-        draft = Draft(purpose=purpose, tables=table_list)
+        draft = Draft(draft_id=draft_id, purpose=purpose, tables=table_list)
         for single_table in table_list:
             chunk_list, data_text = self.parse_database(database, query=single_table)
             single_draft = self.draft_chain.run(purpose=purpose, draft=draft.text, single_table=single_table, database=data_text, table=table)
-            draft_part = DraftPart(text=single_draft, purpose=purpose, single_table=single_table, files=chunk_list)
+            draft_part = DraftPart(text=single_draft, single_table=single_table, files=chunk_list)
             draft.add_draft_part(draft_part)
         return draft
     
-    async def arun(self, purpose:str=None, table:str=None, database=None):
+    async def arun(self, purpose:str=None, table:str=None, database=None, draft_id=None):
         # TODO: 수정필요
         draft = await self.draft_chain.arun(purpose=purpose, table=table, database=database)
         return draft

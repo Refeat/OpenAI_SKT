@@ -56,7 +56,7 @@ class DraftChain(BaseChain):
     def __init__(self, 
                 draft_template=None, 
                 input_variables:List[str]=None,
-                draft_template_path='../openai_skt/models/templates/keywords_prompt.json', 
+                draft_template_path='../openai_skt/models/templates/draft_prompt.json', 
                 model='gpt-3.5-turbo-16k', 
                 verbose=False) -> None:
         super().__init__(template=draft_template, input_variables=input_variables, template_path=draft_template_path, model=model, verbose=verbose)

@@ -6,7 +6,9 @@ The output format is Markdown.
 Answer in Korean.
 
 background knowledge:
+===
 {database}
+===
 
 topic:
 {purpose}
