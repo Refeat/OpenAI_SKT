@@ -32,6 +32,7 @@ from modules import Draft
 # 5. project load시 pkl로 불러옴.(Project)
 # 6. qna 함수 추가
 # 7. draft_id 추가, draft 생성시(get_draft)에 함께 넣어줌
+# 8. embedchain대신 customembedchain 사용
 
 class Project:
     save_root_path = f"./user"
@@ -293,7 +294,6 @@ class Project:
         return keywords_files
     
     async def async_search_keywords(self):
-        # tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
         tasks = [self.search_tool.async_search(query=keyword) for keyword in self.keywords]
         results = await asyncio.gather(*tasks)
 
