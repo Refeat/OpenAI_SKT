@@ -1,8 +1,10 @@
 from typing import List
 
+from models.llm import KeywordsChain
+
 class KeywordsGeneratorInstance:
-    def __init__(self, keywords_chain=None) -> None:
-        self.keywords_chain = keywords_chain
+    def __init__(self, verbose=False) -> None:
+        self.keywords_chain = KeywordsChain(verbose=verbose)
 
     def run(self, purpose:str=None, table:str=None) -> List[str]:
         result = self.keywords_chain.run(purpose=purpose, table=table)

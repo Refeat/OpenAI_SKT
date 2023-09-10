@@ -1,0 +1,3 @@
+[submodule "openai_skt/embedchain"]
+	path = openai_skt/embedchain
+	url = https://github.com/SUNGBEOMCHOI/embedchain.git

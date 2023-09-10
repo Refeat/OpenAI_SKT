@@ -49,7 +49,7 @@ def youtube_load_language_fix(self) -> List[Document]:
         return [Document(page_content=transcript, metadata=metadata)]
 
 YoutubeLoader.load = youtube_load_language_fix
-embed_chain = EmbedChain(config=AppConfig())
+# embed_chain = EmbedChain(config=AppConfig())
 
 
 # WebpageLoader at langchain dynamic page error fix
@@ -232,31 +232,6 @@ import requests
 from bs4 import BeautifulSoup
 from embedchain.loaders.base_loader import BaseLoader
 from embedchain.utils import clean_string
-
-# import re
-
-# def clean_string(text):
-#     """
-#     This function takes in a string and performs a series of text cleaning operations.
-
-#     Args:
-#         text (str): The text to be cleaned. This is expected to be a string.
-
-#     Returns:
-#         cleaned_text (str): The cleaned text after all the cleaning operations
-#         have been performed.
-#     """
-    
-#     # Merge operations:
-#     # 1. Replace newline characters and backslashes.
-#     # 2. Replace hash characters.
-#     # 3. Strip and reduce multiple spaces to single.
-#     # 4. Eliminate consecutive non-alphanumeric characters.
-#     cleaned_text = re.sub(r"\s+", " ", text.replace("\n", " ").replace("\\", "").replace("#", " ")).strip()
-#     cleaned_text = re.sub(r"([^\w\s])\1*", r"\1", cleaned_text)
-
-#     return cleaned_text
-
 
 def optimized_load_data(self, url):
         """Load data from a web page."""

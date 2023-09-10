@@ -1,6 +1,8 @@
+from models.llm import TableChain
+
 class TableGeneratorInstance:
-    def __init__(self, table_chain=None) -> None:
-        self.table_chain = table_chain
+    def __init__(self, verbose=False) -> None:
+        self.table_chain = TableChain(verbose=verbose)
 
     def run(self, purpose:str=None):
         table = self.table_chain.run(purpose=purpose)

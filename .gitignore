@@ -1,8 +1,8 @@
-embedchain/
 .secrets.ini
 **/__pycache__/
 **/db/
 **/user/
+**/*.pkl
 
 openai_skt/test.py
 openai_skt/test2.txt

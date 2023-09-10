@@ -1,4 +1,5 @@
 embedchain
+embedchain[elasticsearch]
 langchain
 beautifulsoup4
 aiohttp
