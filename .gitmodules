@@ -1,6 +1,0 @@
-[submodule "openai_skt/embedchain"]
-	path = openai_skt/embedchain
-	url = https://github.com/SUNGBEOMCHOI/embedchain.git
-[submodule "openai_skt/database/chunk/VipsPython"]
-	path = openai_skt/database/chunk/VipsPython
-	url = https://github.com/wushuartgaro/VipsPython.git
