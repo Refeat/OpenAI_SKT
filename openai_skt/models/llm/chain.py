@@ -121,6 +121,21 @@ class SummaryChunkChain(BaseChain):
                 verbose=False) -> None:
         super().__init__(template=summary_chunk_template, input_variables=input_variables, template_path=summary_chunk_template_path, model=model, verbose=verbose)
 
+    def run(self, chunk:str=None):
+        return super().run(document=chunk)
+    
+    async def arun(self,chunk:str=None):
+        return await super().arun(document=chunk)
+
+class UnifiedSummaryChunkChain(BaseChain):
+    def __init__(self, 
+                summary_chunk_template=None, 
+                input_variables:List[str]=None,
+                summary_chunk_template_path='../openai_skt/models/templates/unified_summary_chunk_prompt.json', 
+                model='gpt-3.5-turbo-16k', 
+                verbose=False) -> None:
+        super().__init__(template=summary_chunk_template, input_variables=input_variables, template_path=summary_chunk_template_path, model=model, verbose=verbose)
+
     def run(self, chunk:str=None, question:str=None):
         return super().run(document=chunk, question=question)
     

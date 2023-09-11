@@ -1,0 +1,5 @@
+{
+  "_type": "prompt",
+  "input_variables": ["question", "document"],
+  "template_path": "../openai_skt/models/templates/unified_summary_chunk_prompt_template.txt"
+}

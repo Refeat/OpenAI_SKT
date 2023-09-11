@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from langchain.tools import BaseTool
 
 from database.database import DataBase
-from models.llm import SummaryChunkChain
+from models.llm import UnifiedSummaryChunkChain
 
 class DatabaseToolInputSchema(BaseModel):
     query: str
@@ -22,7 +22,7 @@ class DatabaseTool(BaseTool):
     def __init__(self, summary_chunk_chain=None) -> None:
         super().__init__()
         if summary_chunk_chain is None:
-            self.summary_chunk_chain = SummaryChunkChain()
+            self.summary_chunk_chain = UnifiedSummaryChunkChain()
         else:
             self.summary_chunk_chain = summary_chunk_chain
 

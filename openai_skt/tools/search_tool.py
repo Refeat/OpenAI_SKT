@@ -8,7 +8,7 @@ from langchain.tools import BaseTool
 from bs4 import BeautifulSoup
 
 from api import KostatAPI, GallupAPI, YoutubeAPI, GoogleSearchAPI, NaverSearchAPI, SerpApiSearch
-from models.llm import SummaryChunkChain
+from models.llm import UnifiedSummaryChunkChain
 
 class SearchToolInputSchema(BaseModel):
     query: str
@@ -36,7 +36,7 @@ class SearchTool(BaseTool):
     def __init__(self, search_by_url_tool, summary_chunk_chain=None) -> None:
         super().__init__()
         if summary_chunk_chain is None:
-            self.summary_chunk_chain = SummaryChunkChain(verbose=True)
+            self.summary_chunk_chain = UnifiedSummaryChunkChain(verbose=True)
         else:
             self.summary_chunk_chain = summary_chunk_chain
         self.search_by_url_tool = search_by_url_tool
