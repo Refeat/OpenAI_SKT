@@ -30,11 +30,10 @@ class DraftGeneratorInstance:
             data_text += f'{idx+1}. {chunk.data}\n'
         return chunk_list, data_text
 
-    def parse_table(self, table:str=None)->List[str]:
-        # 정규 표현식 패턴 사용
-        table_list = re.split(r"\d+\.", table)[1:]  # 첫 번째 빈 문자열 제거
+    def parse_table(self, table:str=None) -> List[str]:
+        table_list = re.split(r"(\d+\.)", table)[1:]  # 첫 번째 빈 문자열 제거
 
-        # 앞 뒤 공백 제거
-        table_list = [section.strip() for section in table_list]
+        # 숫자와 내용을 합침
+        table_list = [table_list[i] + table_list[i+1] for i in range(0, len(table_list), 2)]
 
         return table_list

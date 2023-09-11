@@ -236,6 +236,9 @@ from embedchain.utils import clean_string
 def optimized_load_data(self, url):
         """Load data from a web page."""
         response = requests.get(url)
+        if response.status_code != 200:
+            print(f"Failed to fetch data from {url}. Status code: {response.status_code}")
+            return []
         data = response.content
         soup = BeautifulSoup(data, "lxml")
         original_size = len(str(soup.get_text()))

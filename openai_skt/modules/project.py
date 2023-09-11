@@ -112,7 +112,6 @@ class Project:
                     embed_chain,
                     user_instance_path
                     ):
-        # TODO: JSON뿐아니라 pkl로 저장하는 것 구현
         # Check that mandatory variables are not None
         if not table_generator_instance:
             raise ValueError("`table_generator_instance` must not be None.")

@@ -46,7 +46,7 @@ search_tool = SearchTool(search_by_url_tool=search_by_url_tool)
 
 async def main():
     project = Project(
-        project_id="test_7", 
+        project_id="test_8", 
         table_generator_instance=table_generator_instance, 
         keywords_generator_instance=keywords_generator_instance, 
         draft_generator_instance=draft_generator_instance, 
@@ -55,7 +55,7 @@ async def main():
         embed_chain=embedchain
     )
     start = time.time()
-    purpose = project.set_purpose(purpose="2023년 우크라이나 러시아 전쟁에 관한 보고서")
+    purpose = project.set_purpose(purpose="후쿠시마 오염수 방류 얼마나 안전할까?")
     print('purpose: ', purpose, time.time()-start)
     table = project.get_table()
     print('table: ', table, time.time()-start) # 10
@@ -64,14 +64,10 @@ async def main():
     print('keywords: ', keywords, time.time()-start) # 13
     files = await project.async_search_keywords()
     print('searched files: ', len(project.files), time.time()-start) # 81.67
-    user_files = [('https://en.wikipedia.org/wiki/Elon_Musk', 'web_page'), ('hello', 'text'), ('https://www.youtube.com/watch?v=Z4fBZGbk5iQ', 'youtube_video'), ('hello.docx', 'docx')]
-    project.add_files(files=user_files) # 유저가 직접 파일 추가
+    # user_files = [('https://en.wikipedia.org/wiki/Elon_Musk', 'web_page'), ('hello', 'text'), ('https://www.youtube.com/watch?v=Z4fBZGbk5iQ', 'youtube_video'), ('hello.docx', 'docx')]
+    # project.add_files(files=user_files) # 유저가 직접 파일 추가
     database = project.parse_files_to_embedchain()
     print('database: ', database, time.time()-start) # 576
-    draft = project.get_draft()
-    print('draft: ', draft, time.time()-start) # 1326
-    project.save()
-    print('saved instance: ', time.time()-start)
     draft = project.get_draft()
     print('draft: ', draft, time.time()-start) # 1326
     project.save()
