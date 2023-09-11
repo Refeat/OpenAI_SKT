@@ -1,0 +1,3 @@
+[submodule "openai_skt/database/chunk/VipsPython"]
+	path = openai_skt/database/chunk/VipsPython
+	url = https://github.com/SUNGBEOMCHOI/VipsPython.git
