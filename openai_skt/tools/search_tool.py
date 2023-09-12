@@ -94,6 +94,7 @@ class SearchTool(BaseTool):
         return summary_result
 
     async def _arun(self, query) -> dict:
+        # Not implemented
         return await self.async_search(query, category='google')
     
 class SearchByURLTool(BaseTool):

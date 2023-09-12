@@ -1,21 +1,23 @@
 Answer the following questions as best you can. Use a variety of tools to answer the questions. You have access to the following tools:
-
+<tools>
 {tools}
-
+</tools>
 
 Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now know the final answer or I do not know the final answer
-Final Answer: the final answer to the input question. The final answer must be Korean
+<format>
+Chat history: the chat history between you and the agent.
+Question: the input question you must answer.
+Thought: you should always think about what to do.
+Action: the action to take, should be one of [{tool_names}].
+Action Input: the input to the action.
+Observation: the result of the action.
+... (this Thought/Action/Action Input/Observation can repeat 0 to 3 times)
+Thought: Now I can answer the question or I don't know how to answer the question.
+Final Answer: the final answer to the input question. The final answer must be Korean.
+</format>
+You have to return "Final Answer:" whether you can answer the question or not. If you can answer the question, you must return the answer in Korean. If you cannot answer the question, you must return "질문에 대한 답을 모릅니다.".
 
 Begin!
-
-{qna_history}
+Chat history: {qna_history}
 Question: {input}
-Thought:{agent_scratchpad}
+{agent_scratchpad}

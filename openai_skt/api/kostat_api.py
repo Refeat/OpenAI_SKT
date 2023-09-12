@@ -14,16 +14,18 @@ except ImportError:
 class KostatAPI(BaseAPI):
     # 통계청 API
     # 검색 카테고리: 통계청누리집, 지표누리, 국가통계포털(KOSIS)통계표, 온라인간행물, 통계설명자료, 통계용어
-    # 여기서는 국가통계포털(KOSIS)통계표 검색만 구현
-    def __init__(self):
+    category = ['통계청누리집', '국가통계포털(KOSIS)통계표'] # 나머지는 구현이 안되어 있음
+    def __init__(self, category='통계청누리집'):
         super().__init__()
         self.base_url = 'https://kostat.go.kr/'
         self.search_url = self.base_url + 'unifSearch/search.es'
         self.name = 'kostat'
-        self.schema_name_list = ['제목', '날짜', '설명', '링크', 'data_type', 'data_path']
+        if category not in self.category:
+            raise ValueError(f"category must be one of {self.category}")
+        self.category = category
 
-    def search(self, query, top_k:int = 5):
-        data, headers = self.parse_input(query)
+    def search(self, query, top_k:int = 5, **kwargs):
+        data, headers = self.parse_input(query, **kwargs)
 
         response = requests.post(self.search_url, data=data, headers=headers)
         
@@ -35,9 +37,9 @@ class KostatAPI(BaseAPI):
             print('통계청 API 검색 요청에 실패하였습니다., status_code:', response.status_code)
             return []
     
-    async def async_search(self, query, top_k:int = 5):
+    async def async_search(self, query, top_k:int = 5, **kwargs):
         
-        data, headers = self.parse_input(query)
+        data, headers = self.parse_input(query, **kwargs)
 
         async with aiohttp.ClientSession() as session:
             async with session.post(self.search_url, data=data, headers=headers) as response:
@@ -51,52 +53,79 @@ class KostatAPI(BaseAPI):
         search_results = []
 
         # 각 항목(리스트 아이템)을 순회
-        for li in soup.select('div.gsb_list.srh_rlist > ul > li'):
-            title = li.select_one('a.gsbl_link').text.replace('<!--HS-->', '').replace('<!--HE-->', '').strip()
-            institute_period = li.select_one('p.gsbl_info').text.strip()
-            description = li.select_one('p.gsbl_descript').text.strip()
-            javascript_url = li.select_one('a.gsbl_link')['href']
-            url = self.parse_url(javascript_url)
+        if self.category == '통계청누리집':
+            for li in soup.select('div.gsb_list.srh_rlist > ul > li'):
+                title = li.select_one('a.gsbl_link').text.strip()
+                date_full = li.select_one('p.gsbl_info').text.strip()
+                date_match = re.search(r'(\d{4}\.\d{2}\.\d{2})', date_full)
+                date = date_match.group(1) if date_match else date_full
+                description = li.select_one('p.gsbl_descript').text.strip()
+                url = li.select_one('a.gsbl_link')['href']
+                url = self.parse_url(url)
 
-            # 결과 저장
-            search_results.append({
-                'title': title,
-                # '날짜': institute_period,
-                'description': description,
-                # '링크': url,
-                'data_type': 'web_page',
-                'data_path': url
-            })
+                search_results.append({
+                    'title': title,
+                    'date': date,
+                    'description': description,
+                    'data_type': 'web_page',
+                    'data_path': url
+                })
+        elif self.category == '국가통계포털(KOSIS)통계표':
+            for li in soup.select('div.gsb_list.srh_rlist > ul > li'):
+                title = li.select_one('a.gsbl_link').text.replace('<!--HS-->', '').replace('<!--HE-->', '').strip()
+                date = li.select_one('p.gsbl_info').text.strip()
+                description = li.select_one('p.gsbl_descript').text.strip()
+                javascript_url = li.select_one('a.gsbl_link')['href']
+                url = self.parse_url(javascript_url)
+
+                search_results.append({
+                    'title': title,
+                    'date': date,
+                    'description': description,
+                    'data_type': 'web_page',
+                    'data_path': url
+                })
         return search_results
     
     def parse_url(self, url):
-        parameters = re.findall(r"'(.*?)'", url)
+        if self.category == '통계청누리집':
+            return urllib.parse.urljoin(self.base_url, url)
+        elif self.category == '국가통계포털(KOSIS)통계표':
+            parameters = re.findall(r"'(.*?)'", url)
 
-        # 파라미터에 맞게 매핑
-        orgId = parameters[0]
-        tblId = parameters[1]
-        path = parameters[3]
-        vw_cd = parameters[4]
-        list_id = parameters[5]
+            # 파라미터에 맞게 매핑
+            orgId = parameters[0]
+            tblId = parameters[1]
+            path = parameters[3]
+            vw_cd = parameters[4]
+            list_id = parameters[5]
 
-        base_url = "https://kosis.kr/statHtml/statHtml.do"
-        params = {
-            "orgId": orgId,
-            "tblId": tblId,
-            "vw_cd": vw_cd,
-            "list_id": list_id,
-            "scrId": "",
-            "seqNo": "",
-            "lang_mode": "ko",
-            "obj_var_id": "",
-            "itm_id": "",
-            "conn_path": "K1",
-            "path": urllib.parse.quote(path)
-        }
+            base_url = "https://kosis.kr/statHtml/statHtml.do"
+            params = {
+                "orgId": orgId,
+                "tblId": tblId,
+                "vw_cd": vw_cd,
+                "list_id": list_id,
+                "scrId": "",
+                "seqNo": "",
+                "lang_mode": "ko",
+                "obj_var_id": "",
+                "itm_id": "",
+                "conn_path": "K1",
+                "path": urllib.parse.quote(path)
+            }
 
-        return base_url + "?" + urllib.parse.urlencode(params)
+            return base_url + "?" + urllib.parse.urlencode(params)
     
-    def parse_input(self, query):
+    def parse_input(self, query, **kwargs):
+        body_search_dict = {
+            '통계청누리집': 'web_bodo',
+            '국가통계포털(KOSIS)통계표': 'statDB'
+            }
+        body_collection_dict = {
+            '통계청누리집': 'web_bodo',
+            '국가통계포털(KOSIS)통계표': 'statDB'
+        }
         headers = {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "Accept-Encoding": "gzip, deflate, br",
@@ -138,7 +167,7 @@ class KostatAPI(BaseAPI):
             'divField': '',
             'datesearch': 'no',
             'requery': '',
-            'lastquery': query,
+            'lastquery': '',
             'detailSearchf': 'N',
             'subjectSearch': '',
             'synYN': 'Y',
@@ -184,17 +213,18 @@ class KostatAPI(BaseAPI):
             'hireCheckbox7': '',
             'hireCheckbox8': '',
             'hireCheckbox9': '',
-            'collection': 'statDB',
+            'collection': body_collection_dict[self.category],
             'statId': '',
             'orgCode': '',
-            'select_search': 'statDB',
+            'select_search': body_search_dict[self.category],
             'query': query
         }
+        data.update(kwargs)
 
         return data, headers
     
 if __name__ == "__main__":
-    kostat_api = KostatAPI()
+    kostat_api = KostatAPI(category='통계청누리집')
     # Using asyncio to run the async function
     result = asyncio.run(kostat_api.async_search('부동산'))
     print(result)
