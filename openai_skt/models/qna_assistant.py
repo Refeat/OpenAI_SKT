@@ -3,13 +3,6 @@ from typing import List
 from models.llm import QnAAgent
 from tools import DatabaseTool, SearchTool, TimeTool, SearchByURLTool
 
-# search_by_url_tool = SearchByURLTool()
-# search_tool = SearchTool(search_by_url_tool=search_by_url_tool)
-# time_tool = TimeTool()
-# database_tool = DatabaseTool()
-
-# tools=[database_tool, search_tool, time_tool]
-
 class QnAInstance:
     def __init__(self, 
                 verbose=False, 
@@ -45,7 +38,7 @@ class QnAInstance:
         return answer
     
     def set_tools(self, database):
-        database_tool = DatabaseTool()
+        database_tool = DatabaseTool(summary_chunk_template=self.summary_chunk_template, input_variables=self.input_variables)
         database_tool.set_database(database)
         tools = [database_tool, self.search_tool, self.time_tool]
         return tools

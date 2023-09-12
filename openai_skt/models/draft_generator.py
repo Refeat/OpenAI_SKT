@@ -5,8 +5,10 @@ from modules import Draft, DraftPart
 from models.llm import DraftChain
 
 class DraftGeneratorInstance:
-    def __init__(self, verbose=False) -> None:
-        self.draft_chain = DraftChain(verbose=verbose)
+    def __init__(self, verbose=False, draft_chain=None) -> None:
+        self.draft_chain = draft_chain
+        if draft_chain == None:
+            self.draft_chain = DraftChain(verbose=verbose)
 
     def run(self, purpose:str=None, table:str=None, database=None, draft_id=None) -> Draft:
         table_list = self.parse_table(table)

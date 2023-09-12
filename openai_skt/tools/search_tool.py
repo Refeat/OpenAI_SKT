@@ -33,10 +33,10 @@ class SearchTool(BaseTool):
     summary_chunk_chain: Any = None
     search_by_url_tool: Any = None
 
-    def __init__(self, search_by_url_tool, summary_chunk_chain=None) -> None:
+    def __init__(self, search_by_url_tool, summary_chunk_chain=None, summary_chunk_template=None, input_variables=None) -> None:
         super().__init__()
         if summary_chunk_chain is None:
-            self.summary_chunk_chain = UnifiedSummaryChunkChain(verbose=True)
+            self.summary_chunk_chain = UnifiedSummaryChunkChain(verbose=True, summary_chunk_template=summary_chunk_template, input_variables=input_variables)
         else:
             self.summary_chunk_chain = summary_chunk_chain
         self.search_by_url_tool = search_by_url_tool
