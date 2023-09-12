@@ -19,10 +19,10 @@ class DatabaseTool(BaseTool):
     """Pydantic model class to validate and parse the tool's input arguments."""
     summary_chunk_chain: Any = None
 
-    def __init__(self, summary_chunk_chain=None) -> None:
+    def __init__(self, summary_chunk_chain=None, summary_chunk_template=None, input_variables = None) -> None:
         super().__init__()
         if summary_chunk_chain is None:
-            self.summary_chunk_chain = UnifiedSummaryChunkChain()
+            self.summary_chunk_chain = UnifiedSummaryChunkChain(summary_chunk_template=summary_chunk_template, input_variables=input_variables)
         else:
             self.summary_chunk_chain = summary_chunk_chain
 

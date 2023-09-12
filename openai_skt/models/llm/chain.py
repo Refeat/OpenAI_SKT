@@ -134,6 +134,8 @@ class UnifiedSummaryChunkChain(BaseChain):
                 summary_chunk_template_path='../openai_skt/models/templates/unified_summary_chunk_prompt.json', 
                 model='gpt-3.5-turbo-16k', 
                 verbose=False) -> None:
+        print(summary_chunk_template)
+        
         super().__init__(template=summary_chunk_template, input_variables=input_variables, template_path=summary_chunk_template_path, model=model, verbose=verbose)
 
     def run(self, chunk:str=None, question:str=None):
