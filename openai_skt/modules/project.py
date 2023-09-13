@@ -342,8 +342,8 @@ class Project:
         self.draft = draft
         return draft
 
-    def get_qna_answer(self, question:str=None, qna_history:List[List[str]]=None):
-        answer = self.qna_instance.run(database=self.database, question=question, qna_history=qna_history)
+    def get_qna_answer(self, question:str=None, qna_history:List[List[str]]=None, queue=None):
+        answer = self.qna_instance.run(database=self.database, question=question, qna_history=qna_history, queue=queue)
         return answer
 
     async def async_get_qna_answer(self, question:str=None, qna_history:List[List[str]]=None):
