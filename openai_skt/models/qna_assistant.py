@@ -13,12 +13,14 @@ class QnAInstance:
                 input_variables=None,) -> None:
         self.summary_chunk_template = summary_chunk_template
         self.input_variables = input_variables
+
         self.search_by_url_tool = SearchByURLTool()
+        self.time_tool = TimeTool()
         self.search_tool = search_tool
+        self.database_tool = database_tool
+
         if search_tool == None:
             self.search_tool = SearchTool(search_by_url_tool=self.search_by_url_tool)
-        self.time_tool = TimeTool()
-        self.database_tool = database_tool
         if database_tool == None:
             self.database_tool = DatabaseTool()
 
@@ -38,7 +40,7 @@ class QnAInstance:
         return answer
 
     def set_tools(self, database):
-        database_tool = DatabaseTool(summary_chunk_template=self.summary_chunk_template, input_variables=self.input_variables)
+        database_tool = DatabaseTool()
         database_tool.set_database(database)
         tools = [database_tool, self.search_tool, self.time_tool]
         return tools

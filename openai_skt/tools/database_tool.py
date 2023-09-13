@@ -19,10 +19,10 @@ class DatabaseTool(BaseTool):
     """Pydantic model class to validate and parse the tool's input arguments."""
     summary_chunk_chain: Any = None
 
-    def __init__(self, summary_chunk_chain=None, summary_chunk_template=None, input_variables = None) -> None:
+    def __init__(self, summary_chunk_chain=None) -> None:
         super().__init__()
         if summary_chunk_chain is None:
-            self.summary_chunk_chain = UnifiedSummaryChunkChain(summary_chunk_template=summary_chunk_template, input_variables=input_variables)
+            self.summary_chunk_chain = UnifiedSummaryChunkChain()
         else:
             self.summary_chunk_chain = summary_chunk_chain
 
@@ -45,7 +45,9 @@ class DatabaseTool(BaseTool):
                 return {k: v for k, v in result.dict().items() if k in tool_input}
         return tool_input
 
-    def _run(self, query, question) -> dict:
+    def _run(self, query, question=None) -> dict:
+        if question is None:
+            question = query
         chunks = self.database.query(query)
         data = ''
         for idx, chunk in enumerate(chunks):
