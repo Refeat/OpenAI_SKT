@@ -1,4 +1,4 @@
-embedchain
+embedchain == 0.0.54
 embedchain[elasticsearch]
 langchain
 beautifulsoup4

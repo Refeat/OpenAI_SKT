@@ -346,8 +346,8 @@ class Project:
         answer = self.qna_instance.run(database=self.database, question=question, qna_history=qna_history, queue=queue)
         return answer
 
-    async def async_get_qna_answer(self, question:str=None, qna_history:List[List[str]]=None):
-        answer = await self.qna_instance.arun(question=question, qna_history=qna_history)
+    async def async_get_qna_answer(self, question:str=None, qna_history:List[List[str]]=None, queue=None):
+        answer = await self.qna_instance.run(database=self.database, question=question, qna_history=qna_history, queue=queue)
         return answer
 
     def edit_draft(self, draft_id:int, query:str):

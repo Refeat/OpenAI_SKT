@@ -113,7 +113,7 @@ class CustomStreamingStdOutCallbackHandler(FinalStreamingStdOutCallbackHandler):
             # sys.stdout.write(token)
             # sys.stdout.flush()
             self.queue.append(token)
-    
+
 class QnAAgent:
     def __init__(self, tools, qna_prompt_path='../openai_skt/models/templates/qna_prompt_template.txt', verbose=False, model='gpt-3.5-turbo-16k') -> None:
         with open(qna_prompt_path, 'r') as f:
@@ -146,10 +146,10 @@ class QnAAgent:
         result = agent_executor.run(input_dict, callbacks=[CustomStreamingStdOutCallbackHandler(queue=queue)])
         return result
 
-    async def arun(self, tools, question, qna_history):
+    async def arun(self, tools, question, qna_history, queue):
         input_dict = self.parse_input(question, qna_history)
         agent_executor = AgentExecutor.from_agent_and_tools(agent=self.agent, tools=tools, verbose=self.verbose)
-        result = await agent_executor.arun(input_dict)
+        result = await agent_executor.arun(input_dict, callbacks=[CustomStreamingStdOutCallbackHandler(queue=queue)])
         return result
     
     def parse_input(self, question, qna_history):
