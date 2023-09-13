@@ -131,7 +131,8 @@ class UnifiedSummaryChunkChain(BaseChain):
     def __init__(self, 
                 summary_chunk_template=None, 
                 input_variables:List[str]=None,
-                summary_chunk_template_path='../openai_skt/models/templates/unified_summary_chunk_prompt.json', 
+                # summary_chunk_template_path='../openai_skt/models/templates/unified_summary_chunk_prompt.json', 
+                summary_chunk_template_path='/home/ubuntu/chat_profile/writer/openai_skt/models/templates/unified_summary_chunk_prompt.json', 
                 model='gpt-3.5-turbo-16k', 
                 verbose=False) -> None:
         print(summary_chunk_template)
