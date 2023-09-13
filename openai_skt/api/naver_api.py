@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 import asyncio
 
@@ -80,12 +81,18 @@ class NaverSearchAPI(BaseAPI):
 
     def parse_result(self, result):
         ret = []
+
+        def remove_html_tags(text):
+            # HTML 태그 제거
+            clean = re.compile('<.*?>')
+            return re.sub(clean, '', text)
+
         if 'items' in result:
             for item in result['items']:
                 ret.append({
-                    'title': item['title'],
+                    'title': remove_html_tags(item['title']),
                     # '링크': item['link'],
-                    'description': item['description'],
+                    'description': remove_html_tags(item['description']),
                     'data_type': 'web_page',
                     'data_path': item['link'],
                 })

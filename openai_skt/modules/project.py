@@ -24,16 +24,6 @@ from typing import List, Dict
 from database.database import DataBase
 from modules import Draft
 
-# 변경사항
-# 1. files(suggestions)가 api가 key -> keyword가 key로 변경
-# 2. self.drafts -> self.draft 마지막 draft 객체에 담음
-# 3. async_search_keywords이후 json 파일로 저장
-# 4. project 저장이 pkl과 json 두가지로 저장
-# 5. project load시 pkl로 불러옴.(Project)
-# 6. qna 함수 추가
-# 7. draft_id 추가, draft 생성시(get_draft)에 함께 넣어줌
-# 8. embedchain대신 customembedchain 사용
-
 class Project:
     save_root_path = f"./user"
     def __init__(self, 
@@ -297,13 +287,17 @@ class Project:
         results = await asyncio.gather(*tasks)
 
         keywords_files = {}
+        file_paths = set()  # 중복되는 파일 경로를 추적하기 위한 set 생성
         for keyword, result in zip(self.keywords, results):
             api_files = {}
             for api_name, infos in result.items():
+                if api_name not in api_files:
+                    api_files[api_name] = []
+
                 for info in infos:
-                    if api_name not in api_files:
-                        api_files[api_name] = []
-                    api_files[api_name].append(info)
+                    if info['file_path'] not in file_paths:
+                        api_files[api_name].append(info)
+                        file_paths.add(info['file_path'])  # 파일 경로를 set에 추가
             keywords_files[keyword] = api_files
 
         # save suggestions
