@@ -80,9 +80,13 @@ class DraftChain(BaseChain):
                 verbose=False,
                 streaming=True) -> None:
         super().__init__(template=draft_template, input_variables=input_variables, template_path=draft_template_path, model=model, verbose=verbose, streaming=streaming)
+        self.streaming = streaming
 
     def run(self, database=None, purpose=None, table=None, draft=None, single_table=None, queue=None):
-        callbacks=[CustomStreamingStdOutCallbackHandler(queue=queue)]
+        if self.streaming:
+            callbacks=[CustomStreamingStdOutCallbackHandler(queue=queue)]
+        else:
+            callbacks=None
         return self.chain.run(callbacks=callbacks, database=database, purpose=purpose, table=table, draft=draft, single_table=single_table)
     
     async def arun(self, database=None, purpose=None, table=None, draft=None, single_table=None):
