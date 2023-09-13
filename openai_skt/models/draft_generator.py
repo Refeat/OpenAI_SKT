@@ -1,4 +1,5 @@
 import re
+import time
 from typing import List
 
 from modules import Draft, DraftPart
@@ -10,12 +11,12 @@ class DraftGeneratorInstance:
         if draft_chain == None:
             self.draft_chain = DraftChain(verbose=verbose)
 
-    def run(self, purpose:str=None, table:str=None, database=None, draft_id=None) -> Draft:
+    def run(self, purpose:str=None, table:str=None, database=None, draft_id=None, queue=None) -> Draft:
         table_list = self.parse_table(table)
         draft = Draft(draft_id=draft_id, purpose=purpose, tables=table_list)
         for single_table in table_list:
             chunk_list, data_text = self.parse_database(database, query=single_table)
-            single_draft = self.draft_chain.run(purpose=purpose, draft=draft.text, single_table=single_table, database=data_text, table=table)
+            single_draft = self.draft_chain.run(purpose=purpose, draft=draft.text, single_table=single_table, database=data_text, table=table, queue=queue)
             draft_part = DraftPart(text=single_draft, single_table=single_table, files=chunk_list)
             draft.add_draft_part(draft_part)
         return draft

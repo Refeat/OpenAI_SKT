@@ -332,13 +332,17 @@ class Project:
         self.keywords = keywords
         return keywords
 
-    def get_draft(self):
-        draft = self.draft_generator_instance.run(purpose=self.purpose, table=self.table, database=self.database, draft_id=self.draft_id)
+    def get_draft(self, draft_id:int=None, queue=None):
+        if draft_id is not None:
+            self.draft_id = draft_id
+        draft = self.draft_generator_instance.run(purpose=self.purpose, table=self.table, database=self.database, draft_id=self.draft_id, queue=queue)
         self.draft = draft
         return draft
 
-    async def async_get_draft(self):
-        draft = await self.draft_generator_instance.arun(purpose=self.purpose, table=self.table, database=self.database, draft_id=self.draft_id)
+    async def async_get_draft(self, draft_id:int=None, queue=None):
+        if draft_id is not None:
+            self.draft_id = draft_id
+        draft = await self.draft_generator_instance.arun(purpose=self.purpose, table=self.table, database=self.database, draft_id=self.draft_id, queue=queue)
         self.draft = draft
         return draft
 

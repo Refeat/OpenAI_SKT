@@ -1,11 +1,29 @@
-from typing import List
+import sys
+from typing import List, Any
 
 from langchain.prompts import PromptTemplate
 from langchain.prompts.loading import load_prompt
 from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 from models.llm import utils
+
+class CustomStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
+    def __init__(
+        self,
+        *,
+        queue,
+    ) -> None:
+        super().__init__()
+        self.queue = queue
+
+    def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
+        """Run on new LLM token. Only available when streaming is enabled."""
+        # sys.stdout.write(token)
+        # sys.stdout.flush()
+        if self.queue is not None:
+            self.queue.append(token)
 
 class BaseChain:
     def __init__(self, 
@@ -13,9 +31,10 @@ class BaseChain:
                  input_variables:List[str]=None, 
                  template_path:str=None, 
                  model="gpt-3.5-turbo",
-                 verbose=False) -> None:
+                 verbose=False,
+                 streaming=False) -> None:
         self.prompt = self._get_prompt(template, input_variables, template_path)
-        self.llm = ChatOpenAI(model=model, temperature=0.0)
+        self.llm = ChatOpenAI(model=model, temperature=0.0, streaming=streaming)
         self.chain = LLMChain(llm=self.llm, prompt=self.prompt, verbose=verbose)
 
     def _get_prompt(self, template, input_variables, template_path):
@@ -26,9 +45,9 @@ class BaseChain:
             return load_prompt(template_path)
         raise ValueError("Either template or template_path should be provided.")
 
-    def run(self, **kwargs):
+    def run(self, callbacks=None, **kwargs):
         input_dict = self.parse_input(**kwargs)
-        return self.chain.run(input_dict)
+        return self.chain.run(input_dict, callbacks=callbacks)
 
     async def arun(self, **kwargs):
         input_dict = self.parse_input(**kwargs)
@@ -58,11 +77,13 @@ class DraftChain(BaseChain):
                 input_variables:List[str]=None,
                 draft_template_path='../openai_skt/models/templates/draft_prompt.json', 
                 model='gpt-3.5-turbo-16k', 
-                verbose=False) -> None:
-        super().__init__(template=draft_template, input_variables=input_variables, template_path=draft_template_path, model=model, verbose=verbose)
+                verbose=False,
+                streaming=True) -> None:
+        super().__init__(template=draft_template, input_variables=input_variables, template_path=draft_template_path, model=model, verbose=verbose, streaming=streaming)
 
-    def run(self, database=None, purpose=None, table=None, draft=None, single_table=None):
-        return super().run(database=database, purpose=purpose, table=table, draft=draft, single_table=single_table)
+    def run(self, database=None, purpose=None, table=None, draft=None, single_table=None, queue=None):
+        callbacks=[CustomStreamingStdOutCallbackHandler(queue=queue)]
+        return self.chain.run(callbacks=callbacks, database=database, purpose=purpose, table=table, draft=draft, single_table=single_table)
     
     async def arun(self, database=None, purpose=None, table=None, draft=None, single_table=None):
         return await super().arun(database=database, purpose=purpose, table=table, draft=draft, single_table=single_table)

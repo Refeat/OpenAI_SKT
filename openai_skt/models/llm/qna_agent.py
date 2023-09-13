@@ -114,7 +114,7 @@ class CustomStreamingStdOutCallbackHandler(FinalStreamingStdOutCallbackHandler):
 
 class QnAAgent:
     def __init__(self, tools, qna_prompt_path='../openai_skt/models/templates/qna_prompt_template.txt', verbose=False, model='gpt-3.5-turbo-16k') -> None:
-        with open(qna_prompt_path, 'r') as f:
+        with open(qna_prompt_path, 'r', encoding='utf-8') as f:
             self.qna_prompt_template = f.read()
         
         self.output_parser = CustomOutputParser()
