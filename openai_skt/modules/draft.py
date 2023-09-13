@@ -18,8 +18,12 @@ class Draft:
         self.files = set()  # initialize as set
         self.draft_parts = list()
 
-    def edit(self):
+    def edit(self, draft_part, modified_draft_part):
+        # 일단 전체 드래프트만 바꿈. 나중에 각 draft_part의 text도 바꿔야 함
+        self.text = self.text.replace(draft_part, modified_draft_part)
+        # TODO: 각 draft_part의 text도 바꾸기. 근데 어떻게 자를지 애매한 부분이 있음
         pass
+
 
     def add_draft_part(self, draft_part):
         if self.text is None:
@@ -60,8 +64,8 @@ class Draft:
             md_path = draft_json_path.replace('.json', '.md')
         elif draft_root_path is not None:
             os.makedirs(draft_root_path, exist_ok=True)
-            json_path = os.path.join(draft_root_path, f"{self.draft_id}.json")
-            md_path = os.path.join(draft_root_path, f"{self.draft_id}.md")
+            json_path = os.path.join(draft_root_path, f"draft_{self.draft_id}.json")
+            md_path = os.path.join(draft_root_path, f"draft_{self.draft_id}.md")
         else:
             raise Exception("Either draft_json_path or draft_root_path must be specified")
         with open(json_path, 'w', encoding='utf-8') as f:

@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 from typing import List, Union, Optional, Dict, Any
@@ -13,6 +14,8 @@ from langchain.memory import ConversationBufferMemory
 from langchain.callbacks.streaming_stdout_final_only import (
     FinalStreamingStdOutCallbackHandler,
 )
+
+current_file_folder_path = os.path.dirname(os.path.abspath(__file__))
 
 # Set up a prompt template
 class CustomPromptTemplate(StringPromptTemplate):
@@ -115,7 +118,11 @@ class CustomStreamingStdOutCallbackHandler(FinalStreamingStdOutCallbackHandler):
             self.queue.append(token)
 
 class QnAAgent:
-    def __init__(self, tools, qna_prompt_path='../openai_skt/models/templates/qna_prompt_template.txt', verbose=False, model='gpt-3.5-turbo-16k') -> None:
+    def __init__(self, 
+                 tools, 
+                 qna_prompt_path=os.path.join(current_file_folder_path, '../templates/qna_prompt_template.txt'), 
+                 verbose=False, 
+                 model='gpt-3.5-turbo-16k') -> None:
         with open(qna_prompt_path, 'r', encoding='utf-8') as f:
             self.qna_prompt_template = f.read()
         

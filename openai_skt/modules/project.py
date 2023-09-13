@@ -32,15 +32,15 @@ class Project:
                 keywords_generator_instance,
                 draft_generator_instance,
                 qna_instance,
+                draft_edit_instance,
                 search_tool,
                 embed_chain) -> None:
         self.project_id = project_id
-        self.draft_id = 'draft_'
+        self.draft_id = None
         self.purpose = None
         self.table = None
         self.keywords = None
         self.draft = None # draft
-        self.qna_history = list()
 
         self.files = dict() # {'검색어1':{'통계청':[{'내용':, '경로':},{}]}}, 키워드로 검색한 파일들
         self.database = DataBase(files=[], embed_chain=embed_chain)
@@ -59,6 +59,7 @@ class Project:
         self.keywords_generator_instance = keywords_generator_instance
         self.draft_generator_instance = draft_generator_instance
         self.qna_instance = qna_instance
+        self.draft_edit_instance = draft_edit_instance
         
         self.search_tool = search_tool
     
@@ -98,6 +99,7 @@ class Project:
                     keywords_generator_instance,
                     draft_generator_instance,
                     qna_instance,
+                    draft_edit_instance,
                     search_tool,
                     embed_chain,
                     user_instance_path
@@ -111,6 +113,8 @@ class Project:
             raise ValueError("`draft_generator_instance` must not be None.")
         if not qna_instance:
             raise ValueError("`qna_instance` must not be None.")
+        if not draft_edit_instance:
+            raise ValueError("`draft_edit_instance` must not be None.")
         if not search_tool:
             raise ValueError("`search_tool` must not be None.")
         if not embed_chain:
@@ -129,7 +133,7 @@ class Project:
                 keywords = user_instance["keywords"]
                 database_path = user_instance["database_path"]
                 draft_path = user_instance["draft_path"]
-                project = cls(project_id, table_generator_instance, keywords_generator_instance, draft_generator_instance, qna_instance, search_tool, embed_chain)
+                project = cls(project_id, table_generator_instance, keywords_generator_instance, draft_generator_instance, qna_instance, draft_edit_instance, search_tool, embed_chain)
                 project.set_purpose(purpose)
                 project.set_table(table)
                 project.set_keywords(keywords)
@@ -144,6 +148,7 @@ class Project:
                 project.keywords_generator_instance = keywords_generator_instance
                 project.draft_generator_instance = draft_generator_instance
                 project.qna_instance = qna_instance
+                project.draft_edit_instance = draft_edit_instance
                 project.search_tool = search_tool
                 project.embed_chain = embed_chain
                 return project
@@ -161,6 +166,7 @@ class Project:
             keywords_generator_instance,
             draft_generator_instance,
             qna_instance,
+            draft_edit_instance,
             search_tool,
             embed_chain,
             project_id=None,
@@ -177,11 +183,20 @@ class Project:
             raise ValueError("`draft_generator_instance` must not be None.")
         if not qna_instance:
             raise ValueError("`qna_instance` must not be None.")
+        if not draft_edit_instance:
+            raise ValueError("`draft_edit_instance` must not be None.")
         if not search_tool:
             raise ValueError("`search_tool` must not be None.")
         if not embed_chain:
             raise ValueError("`embed_chain` must not be None.")
-        project = cls(project_id, table_generator_instance, keywords_generator_instance, draft_generator_instance, qna_instance, search_tool, embed_chain)
+        project = cls(project_id, 
+                      table_generator_instance, 
+                      keywords_generator_instance, 
+                      draft_generator_instance, 
+                      qna_instance, 
+                      draft_edit_instance,
+                      search_tool, 
+                      embed_chain)
         project.set_purpose(purpose)
         project.set_table(table)
         project.set_keywords(keywords)
@@ -230,6 +245,7 @@ class Project:
         state['keywords_generator_instance'] = None
         state['draft_generator_instance'] = None
         state['qna_instance'] = None
+        state['draft_edit_instance'] = None
         state['search_tool'] = None
         return state
 
@@ -295,9 +311,9 @@ class Project:
                     api_files[api_name] = []
 
                 for info in infos:
-                    if info['file_path'] not in file_paths:
+                    if info['data_path'] not in file_paths:
                         api_files[api_name].append(info)
-                        file_paths.add(info['file_path'])  # 파일 경로를 set에 추가
+                        file_paths.add(info['data_path'])  # 파일 경로를 set에 추가
             keywords_files[keyword] = api_files
 
         # save suggestions
@@ -329,14 +345,14 @@ class Project:
     def get_draft(self, draft_id:int=None, queue=None):
         if draft_id is not None:
             self.draft_id = draft_id
-        draft = self.draft_generator_instance.run(purpose=self.purpose, table=self.table, database=self.database, draft_id=self.draft_id + str(draft_id), queue=queue)
+        draft = self.draft_generator_instance.run(purpose=self.purpose, table=self.table, database=self.database, draft_id=draft_id, queue=queue)
         self.draft = draft
         return draft
 
     async def async_get_draft(self, draft_id:int=None, queue=None):
         if draft_id is not None:
             self.draft_id = draft_id
-        draft = await self.draft_generator_instance.arun(purpose=self.purpose, table=self.table, database=self.database, draft_id=self.draft_id + str(draft_id), queue=queue)
+        draft = await self.draft_generator_instance.arun(purpose=self.purpose, table=self.table, database=self.database, draft_id=draft_id, queue=queue)
         self.draft = draft
         return draft
 
@@ -348,7 +364,7 @@ class Project:
         answer = await self.qna_instance.run(database=self.database, question=question, qna_history=qna_history, queue=queue)
         return answer
 
-    def edit_draft(self, draft_id:int, query:str):
-        draft = self.drafts[draft_id]
-        draft.edit(query)
-        return self.drafts[draft_id]
+    def edit_draft(self, query:str, draft_part:str):
+        self.draft_edit_instance.run(database=self.database, query=query, draft=self.draft, draft_part=draft_part) # It return draft object
+        self.save()
+        return self.draft.text

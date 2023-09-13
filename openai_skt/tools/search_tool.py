@@ -16,8 +16,8 @@ class SearchToolInputSchema(BaseModel):
 
 class SearchTool(BaseTool):
     category_api_dict = {
-        # 'all': [KostatAPI(), GallupAPI(), YoutubeAPI(), GoogleSearchAPI(), NaverSearchAPI()],
-        'all': [KostatAPI(), GallupAPI(), YoutubeAPI(), SerpApiSearch(), NaverSearchAPI()],
+        'all': [KostatAPI(), GallupAPI(), YoutubeAPI(), GoogleSearchAPI(), NaverSearchAPI()],
+        # 'all': [KostatAPI(), GallupAPI(), YoutubeAPI(), SerpApiSearch(), NaverSearchAPI()],
         'kostat': [KostatAPI()],
         'gallup': [GallupAPI()],
         'youtube': [YoutubeAPI()],
@@ -36,7 +36,7 @@ class SearchTool(BaseTool):
     def __init__(self, search_by_url_tool, summary_chunk_chain=None, summary_chunk_template=None, input_variables=None) -> None:
         super().__init__()
         if summary_chunk_chain is None:
-            self.summary_chunk_chain = UnifiedSummaryChunkChain(verbose=True, summary_chunk_template=summary_chunk_template, input_variables=input_variables)
+            self.summary_chunk_chain = UnifiedSummaryChunkChain()
         else:
             self.summary_chunk_chain = summary_chunk_chain
         self.search_by_url_tool = search_by_url_tool

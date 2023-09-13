@@ -1,5 +1,6 @@
 I want you to be the writer who creates the table of contents for the article.
 I will give you the topic of the article, and I will need you to generate the table of contents.
+The table of contents must contain five or fewer elements.
 Only say the table of contents. But if there is none, say nothing, and don't give me an explanation.
 Answer in Korean.
 

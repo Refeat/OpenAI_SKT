@@ -4,6 +4,8 @@ from pydantic import BaseModel
 from langchain.tools import BaseTool
 from langchain.tools.python.tool import PythonREPLTool
 
+from models.llm import GraphChain
+
 class GraphTool(BaseTool):
     name = "graph_tool"
     description = """
@@ -23,9 +25,11 @@ Please plot the table below as a bar chart.
     graph_chain: Any
     python_tool: Any
 
-    def __init__(self, graph_chain) -> None:
+    def __init__(self, graph_chain=None) -> None:
         super().__init__()
         self.graph_chain = graph_chain
+        if self.graph_chain is None:
+            self.graph_chain = GraphChain()
         self.python_tool = PythonREPLTool()
 
     def _run(self, query) -> dict:

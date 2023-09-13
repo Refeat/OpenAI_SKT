@@ -42,10 +42,17 @@ class KostatAPI(BaseAPI):
         data, headers = self.parse_input(query, **kwargs)
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(self.search_url, data=data, headers=headers) as response:
-                html_content = await response.text()
-                search_results = self.parse_result(html_content)
-                return search_results[:top_k]
+            try:
+                async with session.post(self.search_url, data=data, headers=headers) as response:
+                    html_content = await response.text()
+                    search_results = self.parse_result(html_content)
+                    return search_results[:top_k]
+            except aiohttp.ClientError as e:  # 가장 일반적인 aiohttp 예외
+                print(f"Request to {self.search_url} failed with error: {e}")
+                return []
+            except Exception as e:  # 그 외의 예외를 포착
+                print(f"Unexpected error: {e}")
+                return []
 
     def parse_result(self, result):
         soup = BeautifulSoup(result, 'lxml')

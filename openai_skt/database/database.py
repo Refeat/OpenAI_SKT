@@ -14,7 +14,7 @@ import threading
 class DataBase:
     # db = DataBase([(path1, type1), (path2, type2), ...]) 으로 선언
     # db[x][y] <- db의 x번째 data, 그 데이터의 y번째 chunk 반환
-    thread_num = 2
+    thread_num = 5
     semaphore = threading.Semaphore(thread_num)
     def __init__(self, files:List[tuple], embed_chain:EmbedChain):
         self.set_embed_chain(embed_chain)

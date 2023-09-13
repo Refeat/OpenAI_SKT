@@ -1,3 +1,4 @@
+import os
 import sys
 from typing import List, Any
 
@@ -7,7 +8,7 @@ from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
-from models.llm import utils
+current_file_folder_path = os.path.dirname(os.path.abspath(__file__))
 
 class CustomStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
     def __init__(
@@ -39,10 +40,12 @@ class BaseChain:
 
     def _get_prompt(self, template, input_variables, template_path):
         if template:
-            assert input_variables, "input_variables must be provided with template."
+            assert input_variables, "input_variables must prompt_template.txtbe provided with template."
             return PromptTemplate(input_variables=input_variables, template=template)
         elif template_path:
-            return load_prompt(template_path)
+            with open(template_path, 'r', encoding='utf-8') as f:
+                template = f.read()
+            return PromptTemplate(input_variables=input_variables, template=template)
         raise ValueError("Either template or template_path should be provided.")
 
     def run(self, callbacks=None, **kwargs):
@@ -59,8 +62,8 @@ class BaseChain:
 class KeywordsChain(BaseChain):
     def __init__(self, 
                  keywords_template=None, 
-                 input_variables:List[str]=None,
-                 keywords_template_path='../openai_skt/models/templates/keywords_prompt.json', 
+                 input_variables:List[str]=["purpose", "table"],
+                 keywords_template_path=os.path.join(current_file_folder_path, '../templates/keywords_prompt_template.txt'), 
                  model='gpt-4', 
                  verbose=False) -> None:
         super().__init__(keywords_template, input_variables, keywords_template_path, model, verbose)
@@ -74,8 +77,8 @@ class KeywordsChain(BaseChain):
 class DraftChain(BaseChain):
     def __init__(self, 
                 draft_template=None, 
-                input_variables:List[str]=None,
-                draft_template_path='../openai_skt/models/templates/draft_prompt.json', 
+                input_variables:List[str]=["purpose", "draft", "database", "single_table", "table"],
+                draft_template_path=os.path.join(current_file_folder_path, '../templates/draft_prompt_template.txt'),
                 model='gpt-3.5-turbo-16k', 
                 verbose=False,
                 streaming=True) -> None:
@@ -95,8 +98,8 @@ class DraftChain(BaseChain):
 class TableChain(BaseChain):
     def __init__(self, 
                 table_template=None, 
-                input_variables:List[str]=None,
-                table_template_path='../openai_skt/models/templates/table_prompt.json', 
+                input_variables:List[str]=["purpose"],
+                table_template_path=os.path.join(current_file_folder_path, '../templates/table_prompt_template.txt'),
                 model='gpt-4', 
                 verbose=False) -> None:
         super().__init__(template=table_template, input_variables=input_variables, template_path=table_template_path, model=model, verbose=verbose)
@@ -110,8 +113,8 @@ class TableChain(BaseChain):
 class DraftChunkChain(BaseChain):
     def __init__(self, 
                 draft_chunk_template=None, 
-                input_variables:List[str]=None,
-                draft_chunk_template_path='../openai_skt/models/templates/draft_chunk_prompt.json', 
+                input_variables:List[str]=["draft", "query"],
+                draft_chunk_template_path=os.path.join(current_file_folder_path, '../templates/draft_chunk_prompt_template.txt'),
                 model='gpt-3.5-turbo-16k', 
                 verbose=False) -> None:
         super().__init__(template=draft_chunk_template, input_variables=input_variables, template_path=draft_chunk_template_path, model=model, verbose=verbose)
@@ -125,8 +128,8 @@ class DraftChunkChain(BaseChain):
 class GraphChain(BaseChain):
     def __init__(self, 
                 graph_template=None, 
-                input_variables:List[str]=None,
-                graph_template_path='../openai_skt/models/templates/graph_prompt.json', 
+                input_variables:List[str]=["graph_to_draw"],
+                graph_template_path=os.path.join(current_file_folder_path, '../templates/graph_prompt_template.txt'),
                 model='gpt-3.5-turbo', 
                 verbose=False) -> None:
         super().__init__(template=graph_template, input_variables=input_variables, template_path=graph_template_path, model=model, verbose=verbose)
@@ -140,8 +143,8 @@ class GraphChain(BaseChain):
 class SummaryChunkChain(BaseChain):
     def __init__(self, 
                 summary_chunk_template=None, 
-                input_variables:List[str]=None,
-                summary_chunk_template_path='../openai_skt/models/templates/summary_chunk_prompt.json', 
+                input_variables:List[str]=["document"],
+                summary_chunk_template_path=os.path.join(current_file_folder_path, '../templates/summary_chunk_prompt_template.txt'),
                 model='gpt-3.5-turbo-16k', 
                 verbose=False) -> None:
         super().__init__(template=summary_chunk_template, input_variables=input_variables, template_path=summary_chunk_template_path, model=model, verbose=verbose)
@@ -155,8 +158,8 @@ class SummaryChunkChain(BaseChain):
 class UnifiedSummaryChunkChain(BaseChain):
     def __init__(self, 
                 summary_chunk_template=None, 
-                input_variables:List[str]=None,
-                summary_chunk_template_path='../openai_skt/models/templates/unified_summary_chunk_prompt.json', 
+                input_variables:List[str]=["question", "document"],
+                summary_chunk_template_path=os.path.join(current_file_folder_path, '../templates/unified_summary_chunk_prompt_template.txt'),
                 model='gpt-3.5-turbo-16k', 
                 verbose=False) -> None:
         

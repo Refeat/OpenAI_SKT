@@ -1,3 +1,4 @@
+import os
 import re
 from typing import List, Union
 
@@ -7,6 +8,8 @@ from langchain.prompts import StringPromptTemplate
 from langchain.schema import AgentAction, AgentFinish, OutputParserException
 from langchain.tools import BaseTool
 from langchain.chat_models import ChatOpenAI
+
+current_file_folder_path = os.path.dirname(os.path.abspath(__file__))
 
 # Set up a prompt template
 class CustomPromptTemplate(StringPromptTemplate):
@@ -35,11 +38,11 @@ class CustomOutputParser(AgentOutputParser):
 
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
         # Check if agent should finish
-        if "Final Answer:" in llm_output:
+        if "Modified Draft:" in llm_output:
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
-                return_values={"output": llm_output.split("Final Answer:")[-1].strip()},
+                return_values={"output": llm_output.split("Modified Draft:")[-1].strip()},
                 log=llm_output,
             )
         # Parse out the action and action input
@@ -53,8 +56,12 @@ class CustomOutputParser(AgentOutputParser):
         return AgentAction(tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output)
     
 class DraftEditAgent:
-    def __init__(self, tools, draft_edit_prompt_path='../openai_skt/models/templates/draft_edit_prompt_template.txt', verbose=False, model='gpt-3.5-turbo-16k') -> None:
-        with open(draft_edit_prompt_path, 'r') as f:
+    def __init__(self, 
+                 tools, 
+                 draft_edit_prompt_path=os.path.join(current_file_folder_path, '../templates/draft_edit_prompt_template.txt'), 
+                 verbose=False, 
+                 model='gpt-3.5-turbo-16k') -> None:
+        with open(draft_edit_prompt_path, 'r', encoding='utf-8') as f:
             self.draft_edit_prompt_template = f.read()
         
         self.output_parser = CustomOutputParser()
@@ -65,10 +72,10 @@ class DraftEditAgent:
             tools=tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because that is needed
-            input_variables=["user_query", "draft", "intermediate_steps"]
+            input_variables=["user_query", "draft_part", "intermediate_steps"]
         )
 
-        self.llm = ChatOpenAI(temperature=0, verbose=self.verbose)
+        self.llm = ChatOpenAI(temperature=0, verbose=self.verbose, model=model)
         self.draft_edit_chain = LLMChain(llm=self.llm, prompt=self.draft_edit_prompt, verbose=self.verbose)
         tool_names = [tool.name for tool in tools]
         self.agent = LLMSingleActionAgent(
@@ -78,18 +85,18 @@ class DraftEditAgent:
             allowed_tools=tool_names
         )
 
-    def run(self, tools, draft:str, query):
-        input_dict = self.parse_input(draft, query)
+    def run(self, tools, draft_part:str, query):
+        input_dict = self.parse_input(draft_part, query)
         agent_executor = AgentExecutor.from_agent_and_tools(agent=self.agent, tools=tools, verbose=self.verbose)
         result = agent_executor.run(input_dict)
         return result
 
-    async def arun(self, tools, draft, query):
-        input_dict = self.parse_input(draft, query)
+    async def arun(self, tools, draft_part, query):
+        input_dict = self.parse_input(draft_part, query)
         agent_executor = AgentExecutor.from_agent_and_tools(agent=self.agent, tools=tools, verbose=self.verbose)
         result = await agent_executor.arun(input_dict)
         return result
     
-    def parse_input(self, draft, query):
-        input_dict = {'user_query': query, 'draft': draft}
+    def parse_input(self, draft_part, query):
+        input_dict = {'user_query': query, 'draft_part': draft_part}
         return input_dict
