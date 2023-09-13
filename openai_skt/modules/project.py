@@ -45,7 +45,7 @@ class Project:
                 search_tool,
                 embed_chain) -> None:
         self.project_id = project_id
-        self.draft_id = 'draft_0'
+        self.draft_id = 'draft_'
         self.purpose = None
         self.table = None
         self.keywords = None
@@ -332,8 +332,8 @@ class Project:
         self.keywords = keywords
         return keywords
 
-    def get_draft(self):
-        draft = self.draft_generator_instance.run(purpose=self.purpose, table=self.table, database=self.database, draft_id=self.draft_id)
+    def get_draft(self, draft_id):
+        draft = self.draft_generator_instance.run(purpose=self.purpose, table=self.table, database=self.database, draft_id=self.draft_id + str(draft_id))
         self.draft = draft
         return draft
 
