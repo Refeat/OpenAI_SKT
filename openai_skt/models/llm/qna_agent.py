@@ -53,6 +53,8 @@ class CustomOutputParser(AgentOutputParser):
         match = re.search(regex, llm_output, re.DOTALL)
         if not match:
             raise OutputParserException(f"Could not parse LLM output: `{llm_output}`")
+            # print(f"Could not parse LLM output: `{llm_output}`")
+            # return
         action = match.group(1).strip()
         action_input = match.group(2)
         # Return the action and action input

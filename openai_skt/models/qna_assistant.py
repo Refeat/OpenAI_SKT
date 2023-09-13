@@ -36,7 +36,7 @@ class QnAInstance:
         tools = self.set_tools(database)
         answer = await self.qna_agent.run(tools=tools, question=question, qna_history=qna_history, queue=queue)
         return answer
-    
+
     def set_tools(self, database):
         database_tool = DatabaseTool(summary_chunk_template=self.summary_chunk_template, input_variables=self.input_variables)
         database_tool.set_database(database)

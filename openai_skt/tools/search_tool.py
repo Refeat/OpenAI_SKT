@@ -76,7 +76,9 @@ class SearchTool(BaseTool):
         return tool_input
 
 
-    def _run(self, query, question) -> dict:
+    def _run(self, query, question=None) -> dict:
+        if question is None:
+            question = query
         search_result_list = self.search(query, category='google', top_k=1)['google_search']
         if len(search_result_list) == 0:
             return {
