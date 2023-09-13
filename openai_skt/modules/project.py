@@ -45,7 +45,7 @@ class Project:
                 search_tool,
                 embed_chain) -> None:
         self.project_id = project_id
-        self.draft_id = 'draft_0'
+        self.draft_id = 'draft_'
         self.purpose = None
         self.table = None
         self.keywords = None
@@ -335,14 +335,14 @@ class Project:
     def get_draft(self, draft_id:int=None, queue=None):
         if draft_id is not None:
             self.draft_id = draft_id
-        draft = self.draft_generator_instance.run(purpose=self.purpose, table=self.table, database=self.database, draft_id=self.draft_id, queue=queue)
+        draft = self.draft_generator_instance.run(purpose=self.purpose, table=self.table, database=self.database, draft_id=self.draft_id + str(draft_id), queue=queue)
         self.draft = draft
         return draft
 
     async def async_get_draft(self, draft_id:int=None, queue=None):
         if draft_id is not None:
             self.draft_id = draft_id
-        draft = await self.draft_generator_instance.arun(purpose=self.purpose, table=self.table, database=self.database, draft_id=self.draft_id, queue=queue)
+        draft = await self.draft_generator_instance.arun(purpose=self.purpose, table=self.table, database=self.database, draft_id=self.draft_id + str(draft_id), queue=queue)
         self.draft = draft
         return draft
 
