@@ -54,6 +54,6 @@ Please plot the table below as a bar chart.
         start_code = result.find("```python") + len("```python")
         end_code = result.rfind("```")
         code = result[start_code:end_code].strip() # text of python code
-        start_path = result.find('step4: ') + len('step4: ')
+        start_path = result.find('Saved image path: ') + len('Saved image path: ')
         save_path = result[start_path:].strip() if result[start_path:].strip() != 'No graph' else None
         return code, save_path

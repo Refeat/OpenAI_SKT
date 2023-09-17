@@ -10,28 +10,25 @@ step4. Return the path to the saved image. If no image is saved, return "No grap
 In the output, the Python code should be separated by ```.
 At the end of the output, return the path to the saved image.
 
-graph1 to draw:
-===
+<graph to draw>
 Please plot the table below as a bar chart.
 | Properties | Information |
 |------------|-------------|
 | **Natural Language Processing Market Size in 2022** | $15.7 billion |
 | **Natural Language Processing Market Forecast 2032** | $144.9 Billion |
 | **Natural Language Processing Market CAGR from 2023 to 2032** | 25.1% |
-===
+</graph to draw>
 
-example1 of step1:
-===
+<step1>
 - bar chart
 - Title: Natural language processing market size 2022-2032.
 - With 1-year bars
 - 2022: $15.7 billion
 - 2032: $144.9 billion
 - Annualized growth rate of 25.1
-===
+</step1>
 
-example1 of step2:
-===
+<step2>
 BEGIN
 
     IMPORT necessary libraries
@@ -47,9 +44,9 @@ BEGIN
     SAVE the chart as an image
 
 END
-===
+</step2>
 
-example1 of step3:
+<step3>
 ```python
 import plotly.graph_objects as go
 
@@ -80,12 +77,16 @@ fig.update_layout(
 # Save the chart as an image
 fig.write_image("nlp_market_size_2022_2032.png")
 ```
+</step3>
 
-example1 of step4: nlp_market_size_2022_2032.png
+<step4>
+Saved image path: nlp_market_size_2022_2032.png
+</step4>
 
-graph2 to draw:
-===
+Begin!
+
+<graph to draw>
 {graph_to_draw}
-===
+</graph to draw>
 
-example2 of step1:
+<step1>

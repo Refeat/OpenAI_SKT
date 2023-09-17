@@ -7,6 +7,7 @@ from langchain.prompts.loading import load_prompt
 from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain.schema import LLMResult
 
 current_file_folder_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -25,6 +26,11 @@ class CustomStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
         # sys.stdout.flush()
         if self.queue is not None:
             self.queue.append(token)
+            
+    def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
+        """Run when LLM ends running."""
+        if self.queue is not None:
+            self.queue.append('<br/>')
 
 class BaseChain:
     def __init__(self, 

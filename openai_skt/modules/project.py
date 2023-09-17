@@ -88,6 +88,10 @@ class Project:
             self.draft = Draft.load(draft_path)
         return self.draft
     
+    def load_draft(self, draft_path:str=None):
+        draft = Draft.load(draft_path)
+        return draft
+    
     def add_files(self, files:List[tuple]):
         # [(path1, type1), (path2, type2), ...]
         # type: ['web_page', 'youtube_video', 'pdf_file', 'text']
@@ -263,8 +267,8 @@ class Project:
                 for file in files_of_api:
                     data_path, data_type = file['data_path'], file['data_type']
                     files.append((data_path, data_type))
-
-        self.database.multithread_add_files(files)
+        # self.database.multithread_add_files(files)
+        self.database.multithread_async_add_files(files)
         return self.database
 
     async def async_parse_files_to_embedchain(self):
@@ -368,3 +372,17 @@ class Project:
         self.draft_edit_instance.run(database=self.database, query=query, draft=self.draft, draft_part=draft_part) # It return draft object
         self.save()
         return self.draft.text
+    
+    def user_edit_draft(self, draft_id, edit_draft:str):
+        # draft id로 draft를 불러온다.
+        draft_path = os.path.join(self.draft_root_path, f"draft_{draft_id}.json")
+        draft = self.load_draft(draft_path)
+        # draft를 수정한다.
+        draft.text = edit_draft
+        if draft_id == self.draft.draft_id:
+            self.draft = draft
+            draft.save(draft_root_path=self.draft_root_path)
+            draft.save(draft_json_path=self.draft_json_path)
+        else:
+            draft.save(draft_root_path=self.draft_root_path)
+        return draft.text

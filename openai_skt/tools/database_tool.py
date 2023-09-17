@@ -12,7 +12,7 @@ class DatabaseToolInputSchema(BaseModel):
     question: str
 
 class DatabaseTool(BaseTool):
-    name = "database"
+    name = "database_tool"
     description = "A tool to get data with from database. The input consists of a 'query' and a 'question', where 'query' is the search query and 'question' is the information you want to get. For example, {'query': 'bitcoin price history', 'question': 'what was the price of bitcoin in 2022?'} would be the input if you want to know the price of bitcoin in 2022. Input must contain both a query and a question."
     database: DataBase= None
     args_schema: Optional[Type[BaseModel]] = DatabaseToolInputSchema

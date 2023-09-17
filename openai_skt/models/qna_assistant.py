@@ -1,14 +1,15 @@
 from typing import List
+import os
 
 from models.llm import QnAAgent
 from tools import DatabaseTool, SearchTool, TimeTool, SearchByURLTool
+current_file_folder_path = os.path.dirname(os.path.abspath(__file__))
 
 class QnAInstance:
     def __init__(self, 
                 verbose=False, 
                 search_tool=None,
                 database_tool=None,
-                qna_prompt_path="../openai_skt/models/templates/qna_prompt_template.txt",
                 summary_chunk_template=None,
                 input_variables=None,) -> None:
         self.summary_chunk_template = summary_chunk_template
@@ -26,7 +27,7 @@ class QnAInstance:
 
         tools = [self.database_tool, self.search_tool, self.time_tool]
         self.qna_agent = QnAAgent(
-            tools=tools, verbose=verbose, model="gpt-3.5-turbo-16k", qna_prompt_path=qna_prompt_path
+            tools=tools, verbose=verbose, model="gpt-3.5-turbo-16k"
         )
 
     def run(self, database, question: str, qna_history: List[List[str]], queue=None):

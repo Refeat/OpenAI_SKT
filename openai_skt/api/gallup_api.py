@@ -84,14 +84,14 @@ class GallupAPI(BaseAPI):
             attachment_link = row.select_one('.t04 a')
             number = row.select_one('.t01').get_text(strip=True)
             title = row.select_one('.t02 a').get_text(strip=True)
-            date = row.select_one('.t03').get_text(strip=True)
+            date = row.select_one('.t03').get_text(strip=True).replace('/', '.')
             file_link = self.base_url + attachment_link['href'] if attachment_link else None
             url = f'https://www.gallup.co.kr/gallupdb/reportContent.asp?seqNo={number}'
             
             result = {
                 # '번호': number,
                 'title': title,
-                # '날짜': date,
+                # 'date': date,
                 # '첨부파일': file_link,
                 # '링크': url,
                 'description': title,

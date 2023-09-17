@@ -1,57 +1,3 @@
-from embedchain.embedchain import EmbedChain
-from embedchain.config import AppConfig
-from typing import List
-
-# YoutubeLoader at langchain transcription language fix
-from langchain.docstore.document import Document
-from langchain.document_loaders import YoutubeLoader
-
-def youtube_load_language_fix(self) -> List[Document]:
-        """Load documents."""
-        try:
-            from youtube_transcript_api import (
-                NoTranscriptFound,
-                TranscriptsDisabled,
-                YouTubeTranscriptApi,
-            )
-        except ImportError:
-            raise ImportError(
-                "Could not import youtube_transcript_api python package. "
-                "Please install it with `pip install youtube-transcript-api`."
-            )
-
-        metadata = {"source": self.video_id}
-
-        if self.add_video_info:
-            # Get more video meta info
-            # Such as title, description, thumbnail url, publish_date
-            video_info = self._get_video_info()
-            metadata.update(video_info)
-
-        try:
-            transcript_list = YouTubeTranscriptApi.list_transcripts(self.video_id)
-        except TranscriptsDisabled:
-            return []
-
-        # detected_language = "en"  # Default to English if language detection fails
-
-        try:
-            # Detect the language of the transcript
-            for transcript in transcript_list:
-                # detected_language = transcript.language_code
-                transcript_pieces = transcript.fetch()
-                break
-        except Exception as e:
-            print(f"Language detection failed: {str(e)}")
-
-        transcript = " ".join([t["text"].strip(" ") for t in transcript_pieces])
-
-        return [Document(page_content=transcript, metadata=metadata)]
-
-YoutubeLoader.load = youtube_load_language_fix
-# embed_chain = EmbedChain(config=AppConfig())
-
-
 # WebpageLoader at langchain dynamic page error fix
 from embedchain.loaders.web_page import WebPageLoader
 
@@ -142,8 +88,6 @@ def webpage_load_loading_fix(self, url):
                     extract_text_from_iframe(parent_element)
             
             def reduce_soup(orig_soup):
-                # print(orig_soup.get_text())
-                # print("==========")
                 tags_to_exclude = [
                     "nav",
                     "aside",
@@ -203,8 +147,6 @@ def webpage_load_loading_fix(self, url):
             # Parse the page content using BeautifulSoup
             soup = BeautifulSoup(page_source, "html.parser")
             content = reduce_soup(soup)
-            # print(content)
-            # print(soup.get_text())
             # Rest of your code for cleaning the page content
         
         except Exception as e:
@@ -226,76 +168,3 @@ def webpage_load_loading_fix(self, url):
 
 # webdrivers = WebdriverQueue(5)
 # WebPageLoader.load_data = webpage_load_loading_fix
-
-import logging
-import requests
-from bs4 import BeautifulSoup
-from embedchain.loaders.base_loader import BaseLoader
-from embedchain.utils import clean_string
-
-def optimized_load_data(self, url):
-        """Load data from a web page."""
-        response = requests.get(url)
-        if response.status_code != 200:
-            print(f"Failed to fetch data from {url}. Status code: {response.status_code}")
-            return []
-        data = response.content
-        soup = BeautifulSoup(data, "lxml")
-        original_size = len(str(soup.get_text()))
-
-        tags_to_exclude = [
-            "nav",
-            "aside",
-            "form",
-            "header",
-            "noscript",
-            "svg",
-            "canvas",
-            "footer",
-            "script",
-            "style",
-        ]
-        for tag in soup(tags_to_exclude):
-            tag.decompose()
-
-        ids_to_exclude = ["sidebar", "main-navigation", "menu-main-menu"]
-        for id in ids_to_exclude:
-            tags = soup.find_all(id=id)
-            for tag in tags:
-                tag.decompose()
-
-        classes_to_exclude = [
-            "elementor-location-header",
-            "navbar-header",
-            "nav",
-            "header-sidebar-wrapper",
-            "blog-sidebar-wrapper",
-            "related-posts",
-        ]
-        for class_name in classes_to_exclude:
-            tags = soup.find_all(class_=class_name)
-            for tag in tags:
-                tag.decompose()
-
-        content = soup.get_text()
-        content = clean_string(content)
-
-        cleaned_size = len(content)
-        if original_size != 0:
-            logging.info(
-                f"[{url}] Cleaned page size: {cleaned_size} characters, down from {original_size} (shrunk: {original_size-cleaned_size} chars, {round((1-(cleaned_size/original_size)) * 100, 2)}%)"  # noqa:E501
-            )
-
-        meta_data = {
-            "url": url,
-        }
-
-        return [
-            {
-                "content": content,
-                "meta_data": meta_data,
-            }
-        ]
-
-
-WebPageLoader.load_data = optimized_load_data
