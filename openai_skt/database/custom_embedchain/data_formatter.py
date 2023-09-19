@@ -24,7 +24,7 @@ from embedchain.loaders.sitemap import SitemapLoader
 from embedchain.models.data_type import DataType
 
 from database.custom_embedchain.loaders.base_loader import BaseLoader
-from database.custom_embedchain.loaders.wep_page import WebPageLoader
+from database.custom_embedchain.loaders.web_page import WebPageLoader
 from database.custom_embedchain.loaders.youtube_video import YoutubeVideoLoader
 
 from database.custom_embedchain.chunkers.base_chunker import BaseChunker

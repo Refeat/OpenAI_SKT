@@ -10,10 +10,6 @@ import asyncio
 from aiohttp.client_exceptions import ClientConnectorError
 from aiohttp import ClientSession, ClientTimeout
 
-timeout = ClientTimeout(total=60)  # 60 seconds for the entire request to complete
-session = ClientSession(timeout=timeout)
-
-
 from tqdm import tqdm
 
 from api import KostatAPI
@@ -25,15 +21,12 @@ LAST_KOREAN = 55203   # '힣'
 sem = asyncio.Semaphore(3)
 data_lock = asyncio.Lock()
 
-unique_data_paths = set()
 combined_results = []
 failed_chars = []  # 처리하지 못한 문자들을 저장하기 위한 리스트
 
-async def write_to_file(data):
-    async with data_lock:
-        with open("results.json", "a", encoding="utf-8") as f:
-            f.write(json.dumps(data, ensure_ascii=False, indent=4))
-            f.write(",\n")
+def write_to_file(combined_results):
+    with open("results111.json", "a", encoding="utf-8") as f:
+        f.write(json.dumps(combined_results, ensure_ascii=False, indent=4))
 
 async def write_completed_character_to_file(char):
     async with data_lock:  # 동일한 데이터 잠금을 사용하여 파일 동시 쓰기를 방지합니다.
@@ -63,14 +56,8 @@ async def search_character(kostat_api, char, pbar):
                     print(f"Timeout for character {char}. Retrying ({3 - retries}/3)...")
                 continue
 
-            new_data = []
             for item in result:
-                if item['data_path'] not in unique_data_paths:
-                    new_data.append(item)
-                    unique_data_paths.add(item['data_path'])
-            
-            # 바로 파일에 쓰기
-            await write_to_file(new_data)
+                combined_results.append(item)
             
             if len(result) < 10:
                 await write_completed_character_to_file(char)
@@ -93,17 +80,10 @@ async def main():
     
     await asyncio.gather(*tasks)
     pbar.close()
+    write_to_file(combined_results)
 
 if __name__ == "__main__":
-    # 파일 초기화 (데이터를 추가하기 전에 기존 내용 삭제)
-    with open("results.json", "w", encoding="utf-8") as f:
-        f.write("[\n")
-
     asyncio.run(main())
-
-    # 파일 마무리 (닫는 괄호 추가)
-    with open("results.json", "a", encoding="utf-8") as f:
-        f.write("]\n")
 
     # Print failed characters
     if failed_chars:
