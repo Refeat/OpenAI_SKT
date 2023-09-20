@@ -24,8 +24,7 @@ class WebPageChunker(BaseChunker):
         )
         super().__init__(text_splitter)
 
-
-def group_based_create_chunks(self, loader, src):
+    def create_chunks(self, loader, src):
         """
         Loads data and chunks it.
 
@@ -37,20 +36,19 @@ def group_based_create_chunks(self, loader, src):
         documents = []
         ids = []
         idMap = {}
-        data_result = loader.load_data(src)
-        data_records = data_result["data"]
-        doc_id = data_result["doc_id"]
-
+        datas = loader.load_data(src)
         metadatas = []
-        for data in data_records:
+        print(datas)
+        for data in datas:
             content = data["content"]
 
             meta_data = data["meta_data"]
             # add data type to meta data to allow query using data type
             meta_data["data_type"] = self.data_type.value
-            meta_data["doc_id"] = doc_id
             url = meta_data["url"]
+
             chunks = self.get_chunks(content)
+
             for chunk in chunks:
                 chunk_id = hashlib.sha256((chunk + url).encode()).hexdigest()
                 if idMap.get(chunk_id) is None:
@@ -62,18 +60,12 @@ def group_based_create_chunks(self, loader, src):
             "documents": documents,
             "ids": ids,
             "metadatas": metadatas,
-            "doc_id": doc_id,
         }
 
-def group_based_get_chunks(self, content):
-    chunks = []
-    for strings in content:
-        chunks.extend(self.text_splitter.split_text(strings))
-    
-    return chunks
-
-# WebPageChunker.create_chunks = group_based_create_chunks
-# WebPageChunker.get_chunks = group_based_get_chunks
-
-# WebPageChunker.create_chunks = group_based_create_chunks
+    def get_chunks(self, content):
+        chunks = []
+        for strings in content:
+            chunks.extend(self.text_splitter.split_text(strings))
+        
+        return chunks
 

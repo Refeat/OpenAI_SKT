@@ -16,7 +16,7 @@ class SearchToolInputSchema(BaseModel):
 
 class SearchTool(BaseTool):
     category_api_dict = {
-        'all': [KostatAPI(), GallupAPI(), YoutubeAPI(), GoogleSearchAPI(), NaverSearchAPI()],
+        'all': [KostatAPI(), YoutubeAPI(), GoogleSearchAPI(), NaverSearchAPI()],
         # 'all': [KostatAPI(), GallupAPI(), YoutubeAPI(), SerpApiSearch(), NaverSearchAPI()],
         'kostat': [KostatAPI()],
         'gallup': [GallupAPI()],

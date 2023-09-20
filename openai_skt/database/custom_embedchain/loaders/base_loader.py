@@ -10,7 +10,7 @@ class BaseLoader(JSONSerializable):
         """
         pass
 
-    async def load_data_async(self, *args, **kwargs):
+    async def async_load_data(self, *args, **kwargs):
         """
         Implemented by child classes
         """

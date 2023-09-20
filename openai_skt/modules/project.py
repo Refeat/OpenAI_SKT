@@ -267,8 +267,8 @@ class Project:
                 for file in files_of_api:
                     data_path, data_type = file['data_path'], file['data_type']
                     files.append((data_path, data_type))
-        # self.database.multithread_add_files(files)
-        self.database.multithread_async_add_files(files)
+        self.database.multithread_add_files(files)
+        # self.database.multithread_async_add_files(files)
         return self.database
 
     async def async_parse_files_to_embedchain(self):
