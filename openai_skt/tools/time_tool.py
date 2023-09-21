@@ -3,7 +3,7 @@ import datetime
 from langchain.tools import BaseTool
 
 class TimeTool(BaseTool):
-    name = "Time Tool"
+    name = "time_tool"
     description = "Tool to get current time. There is no input"
     
     def __init__(self) -> None:

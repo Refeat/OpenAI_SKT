@@ -1,4 +1,3 @@
-from embedchain.embedchain import EmbedChain
 from typing import List, Dict
 import tiktoken
 
@@ -24,6 +23,13 @@ class Data:
         if ids:
             self.data_path = metadatas[0]['url']
             self.data_type = parsed_data['metadatas'][0]['data_type']
+
+    def print_chunks(self):
+        print('Data{')
+        for i in range(len(self)):
+            print('\t[' + str(i) + ']', self[i].data)
+            print('=' * 40)
+        print('}')
     
     def __getitem__(self, idx):
         if type(idx) is str:

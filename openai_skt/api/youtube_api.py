@@ -48,7 +48,7 @@ class YoutubeAPI(BaseAPI):
             if item['id']['kind'] == 'youtube#video':
                 ret.append({
                     'title': item['snippet']['title'].replace('&quot;', '').replace('&#39;', ''),
-                    # '날짜': item['snippet']['publishTime'],
+                    # 'date': item['snippet']['publishTime'],
                     # '채널': item['snippet']['channelTitle'],
                     'description': item['snippet']['description'],
                     # '링크': 'https://www.youtube.com/watch?v=' + item['id']['videoId'],

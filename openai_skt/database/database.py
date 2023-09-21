@@ -5,10 +5,8 @@ import pickle
 from typing import List
 
 from embedchain.embedchain import EmbedChain
-from embedchain.config import AppConfig
 
 from database.data import Data
-import database.loader
 import threading
 
 class DataBase:
@@ -72,8 +70,8 @@ class DataBase:
                 self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
                 self.update_where()
                 self.update_token_num()
-        except:
-            print(filepath, 'has no data')
+        except Exception as e:
+            print(f"Error with file: {filepath}. Error: {e}")
             return
         finally:
             self.semaphore.release()
@@ -82,7 +80,7 @@ class DataBase:
         self.token_num = 0
         for data in self.data.values():
             self.token_num += data.token_num
-        self.cost = self.token_num * 0.0001 * 0.0002
+        self.cost = self.token_num * 0.001 * 0.0002
 
     def add_files(self, files: List[tuple]):
         for file in files:
@@ -90,7 +88,16 @@ class DataBase:
             self.add(file_path, data_type)
 
     async def async_add(self, filepath: str, data_type: str):
-        self.add(filepath, data_type)
+        try:
+            hash_id = await self.embed_chain.async_add(filepath, data_type)
+            db_ids = list(self.embed_chain.db.get([], {'hash': hash_id}))
+            if len(db_ids) != 0:
+                parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas"])
+                self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
+                self.update_where()
+                self.update_token_num()
+        except Exception as e:
+            print(f"Error with file: {filepath}. Error: {e}")
     
     async def async_add_files(self, files: List[tuple]):
         data_add_tasks = [self.async_add(file_path, data_type) for (file_path, data_type) in files]
@@ -98,17 +105,54 @@ class DataBase:
     
     def multithread_add_files(self, files: List[tuple]):
         data_add_threads = []
-        
         for file_path, data_type in files:
             # Acquire a semaphore before starting a new thread
-            self.semaphore.acquire()
+            # self.semaphore.acquire()
+            acquired = self.semaphore.acquire(timeout=10)  # 10 seconds timeout
+            if not acquired:
+                print(f"Timeout while waiting to process {file_path}")
+                return
             
             thread = threading.Thread(target=self.add, args=[file_path, data_type])
             data_add_threads.append(thread)
             thread.start()
-
         for thread in data_add_threads:
             thread.join()
+
+    def _run_event_loop(self, loop, files: list[tuple]):
+        """Runs the given event loop with the async_add_files function."""
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(self.async_add_files(files))
+        except (Exception, asyncio.CancelledError) as e:
+            # You might want to log the error here for debugging
+            print(f"Error in _run_event_loop: {e}")
+        finally:
+            loop.close()
+
+    def multithread_async_add_files(self, files: list[tuple]):
+        """Uses multiple threads, each with its own async event loop, to add files."""
+
+        if not files:
+            return
+
+        # Break the files into chunks of 5
+        CHUNK_SIZE = 2
+        file_chunks = [files[i:i + CHUNK_SIZE] for i in range(0, len(files), CHUNK_SIZE)]
+
+        # Process each chunk of 5 files using the specified number of threads
+        for chunk_index in range(0, len(file_chunks), self.thread_num):
+            threads = []
+            for file_chunk in file_chunks[chunk_index:chunk_index + self.thread_num]:
+                loop = asyncio.new_event_loop()
+                thread = threading.Thread(target=self._run_event_loop, args=(loop, file_chunk))
+                thread.start()
+                threads.append(thread)
+
+            # Wait for all threads to finish before processing the next chunk
+            for thread in threads:
+                thread.join()
+
 
     def query(self, query, top_k:int = 5):
         # input list of query ex) ['hi', 'hello']

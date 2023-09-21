@@ -9,5 +9,12 @@ openai_skt/test2.txt
 openai_skt/time_test.txt
 openai_skt/test3.txt
 openai_skt/database/crawling/koreakr/koreakr.json
+openai_skt/database/crawling/koreakr/error_logs.json
+openai_skt/database/crawling/koreakr/downloaded_files.json
+openai_skt/database/crawling/koreakr/files/
 openai_skt/database/crawling/kostat/completed_characters.json
 openai_skt/database/crawling/kostat/results.json
+openai_skt/database/crawling/koreakr/files.zip
+openai_skt/database/crawling/kostat/files.zip
+openai_skt/database/crawling/kostat/files/
+openai_skt/tutorials/Screenshots/

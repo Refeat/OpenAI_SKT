@@ -7,7 +7,9 @@ import argparse
 
 from tqdm import tqdm
 
-sem = asyncio.Semaphore(10) # Limit the number of concurrent downloads
+error_logs = [] 
+
+sem = asyncio.Semaphore(5) # Limit the number of concurrent downloads
 
 async def extract_filename_from_content_disposition(content_disposition):
     filename_match = re.search(r'filename\*=UTF-8\'\'(.+)', content_disposition)
@@ -32,11 +34,13 @@ def sanitize_filename(filename):
 
 async def download_file(data, download_folder, pbar):
     url = data.get("pdf_download_link")
+    headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
     downloaded_files = []
-    
     async with sem:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
+        try:
+            async with aiohttp.request('GET', url, headers=headers) as response:
                 if response.status != 200:
                     # print(f"Failed to download {url}. HTTP status code: {response.status}")
                     pass
@@ -65,8 +69,15 @@ async def download_file(data, download_folder, pbar):
                     "pdf_download_link": url,
                     "downloaded_file_path": filepath
                 })
-                
-                pbar.update(1)
+        except Exception as e:
+            # 예외 발생 시, 해당 데이터와 에러 메시지를 error_logs에 추가합니다.
+            error_logs.append({
+                "data": data,
+                "error": str(e)
+            })
+            await asyncio.sleep(5)
+        finally:
+            pbar.update(1)
 
     return downloaded_files
 
@@ -86,6 +97,12 @@ def save_results_to_json(downloaded_files, output_filename):
                     json.dump(file_info, output_file, ensure_ascii=False)
                     output_file.write('\n')
 
+def save_error_logs():
+    with open("error_logs.json", "w", encoding="utf-8") as error_file:
+        for log in error_logs:
+            json.dump(log, error_file, ensure_ascii=False)
+            error_file.write('\n')
+
 async def main(json_filepath, download_folder, output_filename):
     os.makedirs(download_folder, exist_ok=True)
     tasks = []
@@ -99,6 +116,7 @@ async def main(json_filepath, download_folder, output_filename):
         downloaded_files = await asyncio.gather(*tasks)
 
     save_results_to_json(downloaded_files, output_filename)
+    save_error_logs()  # 에러 로그 저장
 
 
 if __name__ == '__main__':
