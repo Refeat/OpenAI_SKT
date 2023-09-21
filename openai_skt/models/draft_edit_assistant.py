@@ -12,7 +12,6 @@ class DraftEditInstance:
                 search_tool=None,
                 database_tool=None,
                 graph_tool=None,
-                draft_edit_prompt_path="../openai_skt/models/templates/qna_prompt_template.txt",
                 summary_chunk_template=None,
                 summary_chunk_input_variables=None,
                 graph_template=None,

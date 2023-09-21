@@ -1,8 +1,17 @@
 I want you to answer the question from the given documentation. 
-There may be a lot of information in a given document that is not relevant to your question, but you should try to find as much relevant information as possible.
-Be as diligent as possible in returning your answer based on your knowledge and documentation.
 If there is no answer in the document, return "No useful information".
+Follow below steps to answer the question:
+step1: Find relevant information to the Question.
+step2: Find the answer from the summarized document.
+step3: Return the answer in korean. Include as many details as possible in answer. It should be in the form of "Final Answer: "
 
-Document: {document}
-Question: {question}
-Answer:
+Begin! 
+
+<Document>
+{document}
+</Document>
+<Question>
+{question}
+</Question>
+
+step1:

@@ -25,7 +25,7 @@ from database.database import DataBase
 from modules import Draft
 
 class Project:
-    save_root_path = f"./user"
+    save_root_path = f"/home/ubuntu/chat_profile/audrey_files/project"
     def __init__(self, 
                 project_id,
                 table_generator_instance,
@@ -87,6 +87,10 @@ class Project:
         if draft_path is not None:
             self.draft = Draft.load(draft_path)
         return self.draft
+    
+    def load_draft(self, draft_path:str=None):
+        draft = Draft.load(draft_path)
+        return draft
     
     def add_files(self, files:List[tuple]):
         # [(path1, type1), (path2, type2), ...]
@@ -320,6 +324,7 @@ class Project:
         with open(self.suggestions_json_path, "w", encoding='utf-8') as f:
             json.dump(keywords_files, f, ensure_ascii=False, indent=4)
         self.files = keywords_files
+        print(self.files)
         return keywords_files
 
     def get_table(self):
@@ -368,3 +373,18 @@ class Project:
         self.draft_edit_instance.run(database=self.database, query=query, draft=self.draft, draft_part=draft_part) # It return draft object
         self.save()
         return self.draft.text
+    
+    def user_edit_draft(self, draft_id, edit_draft:str):
+        # draft id로 draft를 불러온다.
+        draft_path = os.path.join(self.draft_root_path, f"draft_{draft_id}.json")
+        draft = self.load_draft(draft_path)
+        # draft를 수정한다.
+        draft.text = edit_draft
+        # 가장 최근이면 self.draft = draft
+        if draft_id == self.draft.draft_id:
+            self.draft = draft
+            draft.save(draft_root_path=self.draft_root_path)
+            draft.save(draft_json_path=self.draft_json_path)
+        else:
+            draft.save(draft_root_path=self.draft_root_path)
+        return draft.text

@@ -25,7 +25,7 @@ class CustomPromptTemplate(StringPromptTemplate):
         thoughts = ""
         for action, observation in intermediate_steps:
             thoughts += action.log
-            thoughts += f"\nObservation: {observation}\nThought: "
+            thoughts += f"\n<Observation> {observation} </Observation>\n<Thought> "
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
         # Create a tools variable from the list of tools provided
@@ -38,20 +38,20 @@ class CustomOutputParser(AgentOutputParser):
 
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
         # Check if agent should finish
-        if "Modified Draft:" in llm_output:
+        if "<Modified Draft>" in llm_output:
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
-                return_values={"output": llm_output.split("Modified Draft:")[-1].strip()},
+                return_values={"output": llm_output.split("<Modified Draft>")[-1].split("</Modified Draft>")[0].strip()},
                 log=llm_output,
             )
         # Parse out the action and action input
-        regex = r"Action\s*\d*\s*:(.*?)\nAction\s*\d*\s*Input\s*\d*\s*:[\s]*(.*)"
+        regex = r"<Action>(.*?)</Action>\n<Action Input>(.*)</Action Input>"
         match = re.search(regex, llm_output, re.DOTALL)
         if not match:
             raise OutputParserException(f"Could not parse LLM output: `{llm_output}`")
         action = match.group(1).strip()
-        action_input = match.group(2)
+        action_input = match.group(2).strip()
         # Return the action and action input
         return AgentAction(tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output)
     
@@ -61,6 +61,7 @@ class DraftEditAgent:
                  draft_edit_prompt_path=os.path.join(current_file_folder_path, '../templates/draft_edit_prompt_template.txt'), 
                  verbose=False, 
                  model='gpt-3.5-turbo-16k') -> None:
+        verbose = True
         with open(draft_edit_prompt_path, 'r', encoding='utf-8') as f:
             self.draft_edit_prompt_template = f.read()
         
@@ -81,7 +82,7 @@ class DraftEditAgent:
         self.agent = LLMSingleActionAgent(
             llm_chain=self.draft_edit_chain, 
             output_parser=self.output_parser,
-            stop=["\nObservation:"], 
+            stop=["\n<Observation>"], 
             allowed_tools=tool_names
         )
 

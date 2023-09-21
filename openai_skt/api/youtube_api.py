@@ -47,7 +47,7 @@ class YoutubeAPI(BaseAPI):
         for item in result['items']:
             if item['id']['kind'] == 'youtube#video':
                 ret.append({
-                    'title': item['snippet']['title'],
+                    'title': item['snippet']['title'].replace('&quot;', '').replace('&#39;', ''),
                     # '날짜': item['snippet']['publishTime'],
                     # '채널': item['snippet']['channelTitle'],
                     'description': item['snippet']['description'],

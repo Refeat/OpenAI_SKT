@@ -120,7 +120,7 @@ class CustomStreamingStdOutCallbackHandler(FinalStreamingStdOutCallbackHandler):
 class QnAAgent:
     def __init__(self, 
                  tools, 
-                 qna_prompt_path=os.path.join(current_file_folder_path, '../templates/qna_prompt_template.txt'), 
+                 qna_prompt_path=os.path.join(current_file_folder_path, 'templates/qna_prompt_template.txt'), 
                  verbose=False, 
                  model='gpt-3.5-turbo-16k') -> None:
         with open(qna_prompt_path, 'r', encoding='utf-8') as f:

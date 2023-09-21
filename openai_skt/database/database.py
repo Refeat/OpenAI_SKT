@@ -67,10 +67,11 @@ class DataBase:
         try:
             hash_id = self.embed_chain.add(filepath, data_type)
             db_ids = list(self.embed_chain.db.get([], {'hash': hash_id}))
-            parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas"])
-            self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
-            self.update_where()
-            self.update_token_num()
+            if len(db_ids) != 0:
+                parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas"])
+                self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
+                self.update_where()
+                self.update_token_num()
         except:
             print(filepath, 'has no data')
             return
