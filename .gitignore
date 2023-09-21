@@ -17,3 +17,5 @@ openai_skt/database/crawling/kostat/results.json
 openai_skt/database/crawling/koreakr/files.zip
 openai_skt/database/crawling/kostat/files.zip
 openai_skt/database/crawling/kostat/files/
+openai_skt/database/crawling/koreakr/samples.zip
+openai_skt/database/crawling/koreakr/samples/
