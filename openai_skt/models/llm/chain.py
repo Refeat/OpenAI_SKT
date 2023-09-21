@@ -12,6 +12,7 @@ from langchain.schema import LLMResult
 current_file_folder_path = os.path.dirname(os.path.abspath(__file__))
 
 class CustomStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
+    # run_inline=True
     def __init__(
         self,
         *,
@@ -25,6 +26,7 @@ class CustomStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
         # sys.stdout.write(token)
         # sys.stdout.flush()
         if self.queue is not None:
+            # print(self.queue)
             self.queue.append(token)
             
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
@@ -39,9 +41,10 @@ class BaseChain:
                  template_path:str=None, 
                  model="gpt-3.5-turbo",
                  verbose=False,
+                 temperature=0.3,
                  streaming=False) -> None:
         self.prompt = self._get_prompt(template, input_variables, template_path)
-        self.llm = ChatOpenAI(model=model, temperature=0.0, streaming=streaming)
+        self.llm = ChatOpenAI(model=model, temperature=temperature, streaming=streaming)
         self.chain = LLMChain(llm=self.llm, prompt=self.prompt, verbose=verbose)
 
     def _get_prompt(self, template, input_variables, template_path):
@@ -136,7 +139,7 @@ class GraphChain(BaseChain):
                 graph_template=None, 
                 input_variables:List[str]=["graph_to_draw"],
                 graph_template_path=os.path.join(current_file_folder_path, '../templates/graph_prompt_template.txt'),
-                model='gpt-3.5-turbo', 
+                model='gpt-4', 
                 verbose=False) -> None:
         super().__init__(template=graph_template, input_variables=input_variables, template_path=graph_template_path, model=model, verbose=verbose)
 
@@ -172,7 +175,12 @@ class UnifiedSummaryChunkChain(BaseChain):
         super().__init__(template=summary_chunk_template, input_variables=input_variables, template_path=summary_chunk_template_path, model=model, verbose=verbose)
 
     def run(self, chunk:str=None, question:str=None):
-        return super().run(document=chunk, question=question)
+        result = super().run(document=chunk, question=question)
+        try:
+            return result.split('Final Answer: ')[1]
+        except:
+            print(result)
+            return "No useful information"
     
     async def arun(self,chunk:str=None, question:str=None):
         return await super().arun(document=chunk, question=question)

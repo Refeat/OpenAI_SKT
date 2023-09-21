@@ -61,6 +61,7 @@ class DraftEditAgent:
                  draft_edit_prompt_path=os.path.join(current_file_folder_path, '../templates/draft_edit_prompt_template.txt'), 
                  verbose=False, 
                  model='gpt-3.5-turbo-16k') -> None:
+        verbose = True
         with open(draft_edit_prompt_path, 'r', encoding='utf-8') as f:
             self.draft_edit_prompt_template = f.read()
         

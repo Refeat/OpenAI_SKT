@@ -25,7 +25,7 @@ from database.database import DataBase
 from modules import Draft
 
 class Project:
-    save_root_path = f"./user"
+    save_root_path = f"/home/ubuntu/chat_profile/audrey_files/project"
     def __init__(self, 
                 project_id,
                 table_generator_instance,
@@ -267,8 +267,8 @@ class Project:
                 for file in files_of_api:
                     data_path, data_type = file['data_path'], file['data_type']
                     files.append((data_path, data_type))
-        # self.database.multithread_add_files(files)
-        self.database.multithread_async_add_files(files)
+        self.database.multithread_add_files(files)
+        # self.database.multithread_async_add_files(files)
         return self.database
 
     async def async_parse_files_to_embedchain(self):
@@ -324,6 +324,7 @@ class Project:
         with open(self.suggestions_json_path, "w", encoding='utf-8') as f:
             json.dump(keywords_files, f, ensure_ascii=False, indent=4)
         self.files = keywords_files
+        print(self.files)
         return keywords_files
 
     def get_table(self):
@@ -379,6 +380,7 @@ class Project:
         draft = self.load_draft(draft_path)
         # draft를 수정한다.
         draft.text = edit_draft
+        # 가장 최근이면 self.draft = draft
         if draft_id == self.draft.draft_id:
             self.draft = draft
             draft.save(draft_root_path=self.draft_root_path)

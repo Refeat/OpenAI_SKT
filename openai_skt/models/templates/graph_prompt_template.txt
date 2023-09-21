@@ -5,7 +5,7 @@ Follow the three steps below.
 step1. Materialize the graph to plot.
 step2. Write pseudocode to draw the materialized graph.
 step3. Generate the plotly library Python code based on the pseudocode.
-step4. Return the path to the saved image. If no image is saved, return "No graph".
+step4. Return the path to the saved image. The image directory is "/home/ubuntu/chat_profile/writer/openai_skt". If no image is saved, return "No graph".
 
 In the output, the Python code should be separated by ```.
 At the end of the output, return the path to the saved image.
@@ -75,7 +75,7 @@ fig.update_layout(
 )
 
 # Save the chart as an image
-fig.write_image("nlp_market_size_2022_2032.png")
+fig.write_image("/home/ubuntu/chat_profile/writer/openai_skt/"+"nlp_market_size_2022_2032.png")
 ```
 </step3>
 
@@ -83,7 +83,7 @@ fig.write_image("nlp_market_size_2022_2032.png")
 Saved image path: nlp_market_size_2022_2032.png
 </step4>
 
-Begin!
+example1 of step4: /home/ubuntu/chat_profile/writer/openai_skt/nlp_market_size_2022_2032.png
 
 <graph to draw>
 {graph_to_draw}

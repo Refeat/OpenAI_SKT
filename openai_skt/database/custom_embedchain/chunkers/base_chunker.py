@@ -1,7 +1,9 @@
 import hashlib
 
 from embedchain.helper_classes.json_serializable import JSONSerializable
-from embedchain.models.data_type import DataType
+# from embedchain.models.data_type import DataType
+
+from database.custom_embedchain.data_type import DataType
 
 
 class BaseChunker(JSONSerializable):
@@ -22,7 +24,7 @@ class BaseChunker(JSONSerializable):
         documents = []
         ids = []
         idMap = {}
-        datas = loader.load_data(src) # 병목
+        datas = loader.load_data(src)
         metadatas = []
         for data in datas:
             content = data["content"]

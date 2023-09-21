@@ -1,4 +1,3 @@
-from embedchain.embedchain import EmbedChain
 from typing import List, Dict
 import tiktoken
 

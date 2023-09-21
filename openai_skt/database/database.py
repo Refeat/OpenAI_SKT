@@ -5,7 +5,6 @@ import pickle
 from typing import List
 
 from embedchain.embedchain import EmbedChain
-from embedchain.config import AppConfig
 
 from database.data import Data
 import threading

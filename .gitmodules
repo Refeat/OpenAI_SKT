@@ -1,3 +1,9 @@
 [submodule "openai_skt/database/chunk/VipsPython"]
 	path = openai_skt/database/chunk/VipsPython
 	url = https://github.com/SUNGBEOMCHOI/VipsPython.git
+[submodule "/root/OpenAI_SKT/openai_skt/database/chunk/layout-parser"]
+	path = /root/OpenAI_SKT/openai_skt/database/chunk/layout-parser
+	url = https://github.com/SUNGBEOMCHOI/layout-parser.git
+[submodule "/root/OpenAI_SKT/openai_skt/database/chunk/camelot"]
+	path = /root/OpenAI_SKT/openai_skt/database/chunk/camelot
+	url = https://github.com/SUNGBEOMCHOI/camelot.git

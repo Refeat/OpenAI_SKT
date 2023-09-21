@@ -2,7 +2,7 @@
 from embedchain.chunkers.docs_site import DocsSiteChunker
 from embedchain.chunkers.docx_file import DocxFileChunker
 from embedchain.chunkers.notion import NotionChunker
-from embedchain.chunkers.pdf_file import PdfFileChunker
+# from embedchain.chunkers.pdf_file import PdfFileChunker
 from embedchain.chunkers.qna_pair import QnaPairChunker
 from embedchain.chunkers.table import TableChunker
 from embedchain.chunkers.text import TextChunker
@@ -17,19 +17,26 @@ from embedchain.loaders.docs_site_loader import DocsSiteLoader
 from embedchain.loaders.docx_file import DocxFileLoader
 from embedchain.loaders.local_qna_pair import LocalQnaPairLoader
 from embedchain.loaders.local_text import LocalTextLoader
-from embedchain.loaders.pdf_file import PdfFileLoader
+# from embedchain.loaders.pdf_file import PdfFileLoader
 from embedchain.loaders.sitemap import SitemapLoader
 # from embedchain.loaders.web_page import WebPageLoader
 # from embedchain.loaders.youtube_video import YoutubeVideoLoader
-from embedchain.models.data_type import DataType
+# from embedchain.models.data_type import DataType
 
 from database.custom_embedchain.loaders.base_loader import BaseLoader
 from database.custom_embedchain.loaders.web_page import WebPageLoader
 from database.custom_embedchain.loaders.youtube_video import YoutubeVideoLoader
+from database.custom_embedchain.loaders.audio import AudioLoader
+from database.custom_embedchain.loaders.pdf_file import PdfFileLoader
+# from database.custom_embedchain.loaders.docx_file import DocxFileLoader
+from database.custom_embedchain.data_type import DataType
 
 from database.custom_embedchain.chunkers.base_chunker import BaseChunker
 from database.custom_embedchain.chunkers.web_page import WebPageChunker
 from database.custom_embedchain.chunkers.youtube_video import YoutubeVideoChunker
+from database.custom_embedchain.chunkers.audio import AudioChunker
+from database.custom_embedchain.chunkers.pdf_file import PdfFileChunker
+# from database.custom_embedchain.chunkers.docx_file import DocxFileChunker
 
 class DataFormatter(JSONSerializable):
     """
@@ -72,6 +79,7 @@ class DataFormatter(JSONSerializable):
             DataType.SITEMAP: SitemapLoader,
             DataType.DOCS_SITE: DocsSiteLoader,
             DataType.CSV: CsvLoader,
+            DataType.AUDIO: AudioLoader,
         }
         lazy_loaders = {DataType.NOTION}
         if data_type in loaders:
@@ -106,10 +114,10 @@ class DataFormatter(JSONSerializable):
             DataType.QNA_PAIR: QnaPairChunker,
             DataType.TEXT: TextChunker,
             DataType.DOCX: DocxFileChunker,
-            DataType.WEB_PAGE: WebPageChunker,
             DataType.DOCS_SITE: DocsSiteChunker,
             DataType.NOTION: NotionChunker,
             DataType.CSV: TableChunker,
+            DataType.AUDIO: AudioChunker,
         }
         if data_type in chunker_classes:
             chunker_class: type = chunker_classes[data_type]

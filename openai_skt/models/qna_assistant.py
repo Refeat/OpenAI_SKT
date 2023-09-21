@@ -10,6 +10,7 @@ class QnAInstance:
                 verbose=False, 
                 search_tool=None,
                 database_tool=None,
+                qna_prompt_path=os.path.join(current_file_folder_path, "templates/qna_prompt_template.txt"),
                 summary_chunk_template=None,
                 input_variables=None,) -> None:
         self.summary_chunk_template = summary_chunk_template
@@ -25,9 +26,10 @@ class QnAInstance:
         if database_tool == None:
             self.database_tool = DatabaseTool()
 
-        tools = [self.database_tool, self.search_tool, self.time_tool]
+        # tools = [self.database_tool, self.search_tool, self.time_tool]
+        tools = [self.database_tool, self.time_tool]
         self.qna_agent = QnAAgent(
-            tools=tools, verbose=verbose, model="gpt-3.5-turbo-16k"
+            tools=tools, verbose=True, model="gpt-3.5-turbo-16k", qna_prompt_path=qna_prompt_path
         )
 
     def run(self, database, question: str, qna_history: List[List[str]], queue=None):

@@ -14,12 +14,14 @@ from embedchain.vectordb.chroma_db import ChromaDB
 from embedchain.config import (AddConfig, AppConfig, BaseEmbedderConfig, BaseLlmConfig,
                                ChromaDbConfig)
 # from embedchain.data_formatter import DataFormatter
-from embedchain.models.data_type import DataType
+# from embedchain.models.data_type import DataType
 from embedchain.utils import detect_datatype
 
 from database.custom_embedchain.chunkers.base_chunker import BaseChunker
 from database.custom_embedchain.loaders.base_loader import BaseLoader
 from database.custom_embedchain.data_formatter import DataFormatter
+from database.custom_embedchain.data_type import DataType
+from database.custom_embedchain.utils import detect_datatype
 
 
 class CustomEmbedChain(EmbedChain):
