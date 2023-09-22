@@ -333,6 +333,8 @@ class CustomEmbedChain(EmbedChain):
 
             # Add hashed source
             m["hash"] = source_id
+            # m["source_type"] = "kostat"
+            # m["source_type"] = "koreakr"
 
             # Note: Metadata is the function argument
             if metadata:

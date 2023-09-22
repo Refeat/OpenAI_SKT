@@ -14,7 +14,7 @@ from embedchain.config.AddConfig import ChunkerConfig
 from embedchain.helper_classes.json_serializable import register_deserializable
 
 from database.custom_embedchain.chunkers.base_chunker import BaseChunker
-from database.custom_embedchain.chunkers.new_layout_parser import LayoutModel
+# from database.custom_embedchain.chunkers.new_layout_parser import LayoutModel
 from api import ClovaOCRAPI
 
 def inside(center, box):
@@ -22,7 +22,8 @@ def inside(center, box):
     bx1, by1, bx2, by2 = box
     return bx1 <= cx <= bx2 and by1 <= cy <= by2
 
-layout_model = LayoutModel()
+# layout_model = LayoutModel()
+layout_model = None
 clova_ocr_api = ClovaOCRAPI()
 
 @register_deserializable

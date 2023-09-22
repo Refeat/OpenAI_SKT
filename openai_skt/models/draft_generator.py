@@ -22,8 +22,9 @@ class DraftGeneratorInstance:
             draft_part = DraftPart(text=single_draft, single_table=single_table, files=chunk_list)
             draft.add_draft_part(draft_part)
         image_url = self.generate_image(table)
+        print(image_url)
         if image_url is not None:
-            draft.text = f"\n![Generated Image]({image_url})\n" + draft.text
+            draft.text = f"![Generated Image]({image_url})\n\n" + draft.text
         
         return draft
     
@@ -53,6 +54,7 @@ class DraftGeneratorInstance:
         image_url = None
         while attempts < max_retries:
             try:
+                print(12312)
                 image_caption = self.image_generation_chain.run(table=table)
                 image_url = self.dalle_api.generate_image(image_caption)
                 break

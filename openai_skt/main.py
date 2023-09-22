@@ -57,7 +57,7 @@ async def main():
     #     embed_chain=embedchain,
     #     draft_edit_instance=draft_edit_instance,
     #     user_instance_path='./user/test_9/user_instance.json')
-    # table = project.get_table()
+    table = project.get_table()
     # print('table: ', table) # 10
     # # project.set_table(table="1.서론...") # 유저가 목차 변경
     # project.save()
@@ -71,10 +71,10 @@ async def main():
     #     embed_chain=embedchain,
     #     draft_edit_instance=draft_edit_instance,
     #     user_instance_path='./user/test_9/user_instance.json')
-    # keywords = project.get_keywords()
+    keywords = project.get_keywords()
     # print('keywords: ', keywords) # 13
     # project.set_keywords(keywords=['갈비탕', '감자탕', '해장국', '순대국', '뼈해장국', '곰탕', '설렁탕', '닭곰탕'])
-    # files = await project.async_search_keywords()
+    files = await project.async_search_keywords()
     # print('searched files: ', len(project.files), time.time()-start) # 81.67
     # project.save()
     # 아래는 프로젝트 로드
@@ -87,9 +87,9 @@ async def main():
     #     embed_chain=embedchain,
     #     draft_edit_instance=draft_edit_instance,
     #     user_instance_path='./user/test_9/user_instance.json')
-    # user_files = [('/root/OpenAI_SKT/openai_skt/tutorials/test_data/(보도자료) 제20회 전국학생통계활용대회 결과 발표.pdf', 'pdf_file'), ('../../OpenAI_SKT/openai_skt/tutorials/test_data/X2Download.app - 월세=월급, 미친 집값의 나라에서 한국인이 발견한 기회 _ 고투조이 변성민 (128 kbps).mp3', 'audio')]
-    user_files = [('/root/OpenAI_SKT/openai_skt/tutorials/test_data/(보도자료) 제20회 전국학생통계활용대회 결과 발표.pdf', 'pdf_file')]
-    project.add_files(files=user_files) # 유저가 직접 파일 추가
+    # user_files = [('/home/ubuntu/chat_profile/writer/openai_skt/tutorials/test_data/(국립농산물품질관리원) 농관원  빅데이터 분석？활용 연구 기반 마련  보도자료(2.22. 조간).pdf', 'pdf_file'), ('/home/ubuntu/chat_profile/writer/openai_skt/tutorials/test_data/X2Download.app - 월세=월급, 미친 집값의 나라에서 한국인이 발견한 기회 _ 고투조이 변성민 (128 kbps).mp3', 'audio')]
+    # user_files = [('/root/OpenAI_SKT/openai_skt/tutorials/test_data/(보도자료) 제20회 전국학생통계활용대회 결과 발표.pdf', 'pdf_file')]
+    # project.add_files(files=user_files) # 유저가 직접 파일 추가
     start = time.time()
     database = project.parse_files_to_embedchain()
     print('database: ', database, time.time()-start) # 576
@@ -104,7 +104,7 @@ async def main():
     #     embed_chain=embedchain,
     #     draft_edit_instance=draft_edit_instance,
     #     user_instance_path='./user/test_9/user_instance.json')
-    # draft = project.get_draft(draft_id=2)
+    draft = project.get_draft(draft_id=2)
     # print('draft: ', draft, time.time()-start) # 1326
     project.save()
     # 아래는 프로젝트 로드
