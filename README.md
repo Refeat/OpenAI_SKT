@@ -39,7 +39,7 @@ In summary, our AI-powered online research tool aims to enhance the productivity
 <p align="center"><a href="https://audrey.kr/"><img width=60% src="https://github.com/san9min/OpenAI_SKT/assets/92682815/6b4c3dc5-8cb1-46aa-8f67-16251578e53d" alt="agent"></a></p>
 
 
-To make GPT more useful, it has been enhanced to understand human language, think autonomously, and make judgments to use appropriate tools.
+To make GPT more useful, we introduce *Agent*. it has been enhanced to understand human language, think autonomously, and make judgments to use appropriate **tools**.
 
 It can now retrieve necessary information from databases or the web, and, based on the found data or numerical information, it is equipped to draw graphs or charts as required.
 
