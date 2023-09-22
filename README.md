@@ -1,7 +1,7 @@
 <br>
 <p align="center"><a href="https://audrey.kr/"><img width=60% src="https://github.com/san9min/OpenAI_SKT/assets/92682815/15fc53df-8a49-4c1d-a825-0ed026fefd31" alt="logo"></a></p>
 <h4 align="center">
- <a href="https://github.com/san9min/OpenAI_SKT">AI</a> &nbsp;&nbsp; | &nbsp;&nbsp; <a href="">Frontend</a> &nbsp;&nbsp; | &nbsp;&nbsp; <a href="https://github.com/audreyaiai/OpenAI_SKT_BE">Backend</a>
+ <a href="https://github.com/audreyaiai/OpenAI_SKT">AI</a> &nbsp;&nbsp; | &nbsp;&nbsp; <a href="">Frontend</a> &nbsp;&nbsp; | &nbsp;&nbsp; <a href="https://github.com/audreyaiai/OpenAI_SKT_BE">Backend</a>
 </h4>
 <br>
 
