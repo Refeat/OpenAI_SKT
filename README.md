@@ -67,7 +67,8 @@ Through this process, we are able to divide each chunk into the following catego
 This comprehensive preprocessing and fine-tuning approach enhances GPT's ability to process and categorize information effectively, making it more proficient in analyzing textual and visual data in a structured manner.
 
 
-
+## Embedding
+![audrey AI_본선](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/e91c51d6-661d-4403-884d-acd42fab48b7)
 
 
 ## Backend Structure
