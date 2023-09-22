@@ -15,9 +15,9 @@ import cv2
 
 from database.custom_embedchain.chunkers.base_chunker import BaseChunker
 
-layout_parser_model = lp.Detectron2LayoutModel('lp://PubLayNet/faster_rcnn_R_50_FPN_3x/config', 
-                                 extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.8],
-                                 label_map={0: "Text", 1: "Title", 2: "List", 3:"Table", 4:"Figure"})
+# layout_parser_model = lp.Detectron2LayoutModel('lp://PubLayNet/faster_rcnn_R_50_FPN_3x/config', 
+#                                  extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.8],
+#                                  label_map={0: "Text", 1: "Title", 2: "List", 3:"Table", 4:"Figure"})
 
 def pixel_to_point(val):
     return val * 72 / 200  # Convert pixel to point using 200 DPI
@@ -42,7 +42,8 @@ class PdfFileChunker(BaseChunker):
             length_function=config.length_function,
         )
         super().__init__(text_splitter)
-        self.layout_parser_model = layout_parser_model
+        # self.layout_parser_model = layout_parser_model
+        self.layout_parser_model = None
 
     def create_chunks(self, loader, src):
         """
@@ -91,6 +92,7 @@ class PdfFileChunker(BaseChunker):
         chunks = []
         meta_datas = []
         # return self.text_splitter.split_text(content)
+        ## TODO 여기 GPU 서버랑 API 통신으로 바꾸기
         image_layout_results = self.layout_parser_model.detect(image)
         for image_layout_result in image_layout_results: # title, figure, text, table, list
             pixel_bounding_box = image_layout_result.coordinates # Get the four corners pixel values of the box (x1, y1, x2, y2)
