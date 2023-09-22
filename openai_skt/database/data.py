@@ -14,6 +14,7 @@ class Data:
         self.token_num = 0
 
         self.chunks = {}
+        print(metadatas[0])
         for i, id_db in enumerate(ids):
             chunk = Chunk(metadatas[i]['url'], metadatas[i]['data_type'], id_db, documents[i])
             self.chunks[id_db] = chunk

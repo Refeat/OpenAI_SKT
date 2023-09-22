@@ -324,7 +324,6 @@ class Project:
         with open(self.suggestions_json_path, "w", encoding='utf-8') as f:
             json.dump(keywords_files, f, ensure_ascii=False, indent=4)
         self.files = keywords_files
-        print(self.files)
         return keywords_files
 
     def get_table(self):
@@ -380,7 +379,6 @@ class Project:
         draft = self.load_draft(draft_path)
         # draft를 수정한다.
         draft.text = edit_draft
-        # 가장 최근이면 self.draft = draft
         if draft_id == self.draft.draft_id:
             self.draft = draft
             draft.save(draft_root_path=self.draft_root_path)

@@ -48,7 +48,7 @@ class DatabaseTool(BaseTool):
     def _run(self, query, question=None) -> dict:
         if question is None:
             question = query
-        chunks = self.database.query(query, top_k=1)
+        chunks = self.database.query(query)
         data = ''
         for idx, chunk in enumerate(chunks):
             data += f'chunk{idx+1}: {chunk.data}\n'

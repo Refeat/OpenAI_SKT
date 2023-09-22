@@ -46,7 +46,9 @@ class GoogleSearchAPI(BaseAPI):
                 "q": query,
                 "key": self.api_key,
                 "cx": self.cse_id,
-                "num": top_k
+                "num": top_k,
+                "gl": "kr",  # 지역을 한국으로 설정
+                "lr": "lang_ko|lang_en"  # 언어를 한국어와 영어로 설정
             }
             response = requests.get(self.base_url, params=params)
             return response.json()
@@ -60,7 +62,9 @@ class GoogleSearchAPI(BaseAPI):
                 "q": query,
                 "key": self.api_key,
                 "cx": self.cse_id,
-                "num": top_k
+                "num": top_k,
+                "gl": "kr",  # 지역을 한국으로 설정
+                "lr": "lang_ko|lang_en"  # 언어를 한국어와 영어로 설정
             }
             async with aiohttp.ClientSession() as session:
                 async with session.get(self.base_url, params=params) as response:

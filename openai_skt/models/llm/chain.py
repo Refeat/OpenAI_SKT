@@ -1,6 +1,6 @@
 import os
-import sys
-from typing import List, Any
+import re
+from typing import List, Any, Dict
 
 from langchain.prompts import PromptTemplate
 from langchain.prompts.loading import load_prompt
@@ -12,7 +12,6 @@ from langchain.schema import LLMResult
 current_file_folder_path = os.path.dirname(os.path.abspath(__file__))
 
 class CustomStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
-    # run_inline=True
     def __init__(
         self,
         *,
@@ -26,7 +25,6 @@ class CustomStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
         # sys.stdout.write(token)
         # sys.stdout.flush()
         if self.queue is not None:
-            # print(self.queue)
             self.queue.append(token)
             
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
@@ -41,8 +39,8 @@ class BaseChain:
                  template_path:str=None, 
                  model="gpt-3.5-turbo",
                  verbose=False,
-                 temperature=0.3,
-                 streaming=False) -> None:
+                 streaming=False,
+                 temperature=0.0) -> None:
         self.prompt = self._get_prompt(template, input_variables, template_path)
         self.llm = ChatOpenAI(model=model, temperature=temperature, streaming=streaming)
         self.chain = LLMChain(llm=self.llm, prompt=self.prompt, verbose=verbose)
@@ -59,14 +57,19 @@ class BaseChain:
 
     def run(self, callbacks=None, **kwargs):
         input_dict = self.parse_input(**kwargs)
-        return self.chain.run(input_dict, callbacks=callbacks)
+        result = self.chain.run(input_dict, callbacks=callbacks)
+        return self.parse_output(result)
 
     async def arun(self, **kwargs):
         input_dict = self.parse_input(**kwargs)
-        return await self.chain.arun(input_dict)
+        result = await self.chain.arun(input_dict)
+        return self.parse_output(result)
 
     def parse_input(self, **kwargs):
         return kwargs
+
+    def parse_output(self, output):
+        return output
 
 class KeywordsChain(BaseChain):
     def __init__(self, 
@@ -139,7 +142,7 @@ class GraphChain(BaseChain):
                 graph_template=None, 
                 input_variables:List[str]=["graph_to_draw"],
                 graph_template_path=os.path.join(current_file_folder_path, '../templates/graph_prompt_template.txt'),
-                model='gpt-4', 
+                model='gpt-3.5-turbo', 
                 verbose=False) -> None:
         super().__init__(template=graph_template, input_variables=input_variables, template_path=graph_template_path, model=model, verbose=verbose)
 
@@ -175,12 +178,120 @@ class UnifiedSummaryChunkChain(BaseChain):
         super().__init__(template=summary_chunk_template, input_variables=input_variables, template_path=summary_chunk_template_path, model=model, verbose=verbose)
 
     def run(self, chunk:str=None, question:str=None):
-        result = super().run(document=chunk, question=question)
-        try:
-            return result.split('Final Answer: ')[1]
-        except:
-            print(result)
-            return "No useful information"
+        return super().run(document=chunk, question=question)
     
     async def arun(self,chunk:str=None, question:str=None):
         return await super().arun(document=chunk, question=question)
+
+class QnAPlanChain(BaseChain):
+    def __init__(self, 
+                qna_plan_template=None, 
+                input_variables:List[str]=["chat_history", "user_input"],
+                qna_plan_template_path=os.path.join(current_file_folder_path, '../templates/qna_plan_prompt_template.txt'), 
+                model='gpt-4', 
+                verbose=False) -> None:
+        super().__init__(template=qna_plan_template, input_variables=input_variables, template_path=qna_plan_template_path, model=model, verbose=verbose)
+
+    def run(self, user_input:str=None, chat_history:List[List[str]]=None):
+        return super().run(user_input=user_input, chat_history=chat_history)
+    
+    async def arun(self, user_input:str=None, chat_history:List[List[str]]=None):
+        return await super().arun(user_input=user_input, chat_history=chat_history)
+
+    def parse_input(self, user_input:str=None, chat_history:List[List[str]]=None):
+        chat_history_text = ""
+        for chat in chat_history[-2:]:
+            chat_history_text += f"User: {chat[0]}\n"
+            chat_history_text += f"Agent: {chat[1]}\n"
+        return {"chat_history": chat_history_text, "user_input": user_input}
+
+    def parse_output(self, output:str=None):
+        if 'Ask to user: ' in output:
+            return output.split('Ask to user: ')[1].strip().split('\n')[0].strip()
+        elif 'Step' in output:
+            plans = re.findall(r'Step\d+: (?:\n)?(.*?\.)(?=\s|$)', output)
+            return plans
+        else:
+            raise ValueError('Invalid output format')
+
+class QnACriticChain(BaseChain):
+    def __init__(self, 
+                qna_critic_template=None, 
+                input_variables:List[str]=["chat_history", "user_input", "plan_and_obs"],
+                qna_critic_template_path=os.path.join(current_file_folder_path, '../templates/qna_critic_prompt_template.txt'), 
+                model='gpt-4', 
+                verbose=False) -> None:
+        super().__init__(template=qna_critic_template, input_variables=input_variables, template_path=qna_critic_template_path, model=model, verbose=verbose)
+
+    def run(self, user_input:str=None, plan_and_obs:List=None, chat_history:List[List[str]]=None):
+        return super().run(user_input=user_input, plan_and_obs=plan_and_obs, chat_history=chat_history)
+    
+    async def arun(self, user_input:str=None, plan_and_obs:List[List[str]]=None, chat_history:List[List[str]]=None):
+        return await super().arun(user_input=user_input, plan_and_obs=plan_and_obs, chat_history=chat_history)
+
+    def parse_input(self, user_input:str=None, plan_and_obs:List[List[str]]=None, chat_history:List[List[str]]=None):
+        chat_history_text = ""
+        for user, agent in chat_history[-3:]:
+            chat_history_text += f"User: {user}\n"
+            chat_history_text += f"Agent: {agent}\n"
+
+        plan_and_obs_text = ""
+        for idx, (plan, obs) in enumerate(plan_and_obs):
+            plan_and_obs_text += f"Plan{idx+1}: {plan}\n"
+            plan_and_obs_text += f"Obs{idx+1}: {obs}\n"
+        return {"chat_history": chat_history_text, "user_input": user_input, "plan_and_obs": plan_and_obs_text}
+    
+    def parse_output(self, output:str=None):
+        return output.split('Final Answer: ')[1][0]
+        
+class WebIntegrateSearchChain(BaseChain):
+    def __init__(self, 
+                web_integrate_search_template=None, 
+                input_variables:List[str]=["purpose", "search_results"],
+                web_integrate_search_template_path=os.path.join(current_file_folder_path, '../templates/web_integrate_search_prompt_template.txt'), 
+                model='gpt-4', 
+                verbose=False) -> None:
+        super().__init__(template=web_integrate_search_template, input_variables=input_variables, template_path=web_integrate_search_template_path, model=model, verbose=verbose)
+
+    def run(self, purpose:str=None, search_results:List[Dict[str,str]]=None):
+        return super().run(purpose=purpose, search_results=search_results)
+    
+    async def arun(self, purpose:str=None, search_results:List[Dict[str,str]]=None):
+        return await super().arun(purpose=purpose, search_results=search_results)
+
+    def parse_input(self, purpose:str=None, search_results:List[Dict[str,str]]=None):
+        search_results_text = ''
+        for idx, search_result in enumerate(search_results):
+            search_results_text += f"web_result_{idx}(title:{search_result['title']}\tdescription:{search_result['description']}\turl:{search_result['data_path']})\n"
+        return {
+            "purpose": purpose,
+            "search_results": search_results_text
+        }        
+
+    def parse_output(self, output:str=None):
+        match = re.search(r'<Answer Type>\s*(\w+)\s*</Answer Type>\s*<Answer Description>\s*([^<]+)\s*</Answer Description>\s*<Answer link>\s*([^<]+)\s*</Answer link>', output)
+        if match:
+            final_answer_type = match.group(1) or ''
+            final_answer = match.group(2) or ''
+            final_answer_url = match.group(3) or ''
+        return final_answer_type, final_answer, final_answer_url
+
+class ImageGenerationChain(BaseChain):
+    def __init__(self, 
+                image_generation_template=None, 
+                input_variables:List[str]=["table"],
+                image_generation_template_path=os.path.join(current_file_folder_path, '../templates/image_generation_prompt_template.txt'), 
+                model='gpt-3.5-turbo', 
+                verbose=False,
+                temperature=0.5) -> None:
+        super().__init__(template=image_generation_template, input_variables=input_variables, template_path=image_generation_template_path, model=model, verbose=verbose)
+
+    def run(self, table:str=None):
+        return super().run(table=table)
+    
+    async def arun(self, table:str=None):
+        return await super().run(table=table)
+
+    def parse_output(self, output):
+        output = output.replace('"', '').replace("'", '')
+        return output

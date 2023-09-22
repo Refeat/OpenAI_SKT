@@ -1,0 +1,7 @@
+{table}
+I'm creating an image thumbnail to go with this table of contents.
+Recommend a single image thumbnail caption for this table of contents.
+That Image caption should be a few words that is completely specific not abstract.
+Do not use proper names such as regions or people's names.
+Answer in English.
+Image caption: 

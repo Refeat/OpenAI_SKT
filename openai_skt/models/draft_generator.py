@@ -1,15 +1,17 @@
 import re
-import time
 from typing import List
 
 from modules import Draft, DraftPart
-from models.llm import DraftChain
+from models.llm import DraftChain, ImageGenerationChain
+from api import DalleAPI
 
 class DraftGeneratorInstance:
     def __init__(self, verbose=False, draft_chain=None) -> None:
         self.draft_chain = draft_chain
         if draft_chain == None:
             self.draft_chain = DraftChain(verbose=verbose)
+        self.image_generation_chain = ImageGenerationChain(verbose=verbose)
+        self.dalle_api = DalleAPI()
 
     def run(self, purpose:str=None, table:str=None, database=None, draft_id=None, queue=None) -> Draft:
         table_list = self.parse_table(table)
@@ -19,6 +21,10 @@ class DraftGeneratorInstance:
             single_draft = self.draft_chain.run(purpose=purpose, draft=draft.text, single_table=single_table, database=data_text, table=table, queue=queue)
             draft_part = DraftPart(text=single_draft, single_table=single_table, files=chunk_list)
             draft.add_draft_part(draft_part)
+        image_url = self.generate_image(table)
+        if image_url is not None:
+            draft.text = f"\n![Generated Image]({image_url})\n" + draft.text
+        
         return draft
     
     async def arun(self, purpose:str=None, table:str=None, database=None, draft_id=None):
@@ -40,3 +46,17 @@ class DraftGeneratorInstance:
         table_list = [table_list[i] + table_list[i+1] for i in range(0, len(table_list), 2)]
 
         return table_list
+
+    def generate_image(self, table: str) -> str:
+        max_retries = 3
+        attempts = 0
+        image_url = None
+        while attempts < max_retries:
+            try:
+                image_caption = self.image_generation_chain.run(table=table)
+                image_url = self.dalle_api.generate_image(image_caption)
+                break
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                attempts += 1
+        return image_url
