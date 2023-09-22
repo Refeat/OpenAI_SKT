@@ -1,8 +1,10 @@
+import re
 import copy
 import hashlib
 from typing import Optional
 
 import numpy as np
+import matplotlib.pyplot as plt
 import camelot
 from pdfminer.layout import LTTextContainer
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -10,25 +12,19 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 # from embedchain.chunkers.base_chunker import BaseChunker
 from embedchain.config.AddConfig import ChunkerConfig
 from embedchain.helper_classes.json_serializable import register_deserializable
-import layoutparser as lp
-import cv2
 
 from database.custom_embedchain.chunkers.base_chunker import BaseChunker
-
-# layout_parser_model = lp.Detectron2LayoutModel('lp://PubLayNet/faster_rcnn_R_50_FPN_3x/config', 
-#                                  extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.8],
-#                                  label_map={0: "Text", 1: "Title", 2: "List", 3:"Table", 4:"Figure"})
-
-def pixel_to_point(val):
-    return val * 72 / 200  # Convert pixel to point using 200 DPI
-
-def adjust_y(y, height):
-    return height - y  # Adjust Y-coordinate
+from database.custom_embedchain.chunkers.new_layout_parser import LayoutModel
+from api import ClovaOCRAPI
 
 def inside(center, box):
     cx, cy = center
     bx1, by1, bx2, by2 = box
     return bx1 <= cx <= bx2 and by1 <= cy <= by2
+
+layout_model = LayoutModel()
+clova_ocr_api = ClovaOCRAPI()
+
 @register_deserializable
 class PdfFileChunker(BaseChunker):
     """Chunker for PDF file."""
@@ -42,8 +38,7 @@ class PdfFileChunker(BaseChunker):
             length_function=config.length_function,
         )
         super().__init__(text_splitter)
-        # self.layout_parser_model = layout_parser_model
-        self.layout_parser_model = None
+        self.layout_model = layout_model
 
     def create_chunks(self, loader, src):
         """
@@ -64,6 +59,7 @@ class PdfFileChunker(BaseChunker):
             image = data["image"] # 이미지 스크린샷
 
             meta_data = data["meta_data"]
+            meta_data["data_type"] = 'pdf_file'
             # add data type to meta data to allow query using data type
             # meta_data["data_type"] = self.data_type.value
             url = meta_data["url"]
@@ -83,6 +79,17 @@ class PdfFileChunker(BaseChunker):
             "metadatas": metadatas,
         }
 
+    def pixel_to_point_bounding_box(self, pdf_height, pixel_bounding_box):
+        def pixel_to_point(val):
+            return val * 72 / 200  # Convert pixel to point using 200 DPI
+
+        def adjust_y(y, height):
+            return height - y  # Adjust Y-coordinate
+        
+        x1, y1, x2, y2 = [pixel_to_point(pixel_value) for pixel_value in pixel_bounding_box]  # Convert pixel values to point
+        point_bounding_box = (x1, adjust_y(y2, pdf_height), x2, adjust_y(y1, pdf_height)) # image layout bounding box (x1, y1, x2, y2)
+        return point_bounding_box
+
     def get_chunks(self, text_layout, image, meta_data):
         """
         Returns chunks using text splitter instance.
@@ -92,18 +99,17 @@ class PdfFileChunker(BaseChunker):
         chunks = []
         meta_datas = []
         # return self.text_splitter.split_text(content)
-        ## TODO 여기 GPU 서버랑 API 통신으로 바꾸기
-        image_layout_results = self.layout_parser_model.detect(image)
+        # image_layout_results = self.layout_model.detect(image)
+        image_layout_results = self.layout_model(image_array=image)
+        pdf_height = text_layout.height
         for image_layout_result in image_layout_results: # title, figure, text, table, list
-            pixel_bounding_box = image_layout_result.coordinates # Get the four corners pixel values of the box (x1, y1, x2, y2)
-            x1, y1, x2, y2 = [pixel_to_point(pixel_value) for pixel_value in pixel_bounding_box]  # Convert pixel values to point
-            pdf_height = text_layout.height
-            bounding_box = (x1, adjust_y(y2, pdf_height), x2, adjust_y(y1, pdf_height)) # image layout bounding box (x1, y1, x2, y2)
+            pixel_bounding_box = image_layout_result['main_bbox'].coordinates # Get the four corners pixel values of the box (x1, y1, x2, y2)
+            bounding_box = self.pixel_to_point_bounding_box(pdf_height, pixel_bounding_box)  # Convert pixel values to point
+
             single_meta_data = copy.deepcopy(meta_data)
-            if image_layout_result.type == 'Text':
+            if image_layout_result['type'] == 'contents':
                 single_meta_data["source_type"] = 'text'
                 
-                # 여기서 pdf부분과 text를 일치시켜야함
                 texts_inside = []
 
                 for element in text_layout:
@@ -118,28 +124,95 @@ class PdfFileChunker(BaseChunker):
                 description = ''
                 for _, _, text in texts_inside:
                     description += text.replace('\n', '')
-                chunks.append(description)
+                description = re.sub(' +', ' ', description)
                 single_meta_data["data"] = description
-                meta_datas.append(single_meta_data)
-            elif image_layout_result.type == 'Table':
+                for chunk in self.text_splitter.split_text(description):
+                    chunks.append(chunk)
+                    meta_datas.append(single_meta_data)
+            elif image_layout_result['type'] == 'table':
                 single_meta_data["source_type"] = 'table'
                 x1, y1, x2, y2 = bounding_box
                 tables = camelot.read_pdf(single_meta_data['url'], pages=str(single_meta_data['page']), table_areas=[f'{x1},{y2},{x2},{y1}'])
                 if len(tables) == 0:
-                    raise ValueError("No table found")
-                crop_image = image_layout_result.crop_image(np.array(image)) # numpy array
-                md_text = tables[0].df.to_markdown() # 여기서 table 이미지를 마크다운으로 변경
-                description = '' # 캡션 + comment 추가
-                data = md_text + description
+                    print('No table found')
+                    continue
+                
+                md_text = tables[0].df.to_markdown()
+                
+                # Extract comments and caption
+                comments = []
+                captions = []
+                
+                comment_boxes = image_layout_result.get('comments', [])
+                for comment_box in comment_boxes:
+                    comment_pixel_bounding_box = comment_box.coordinates
+                    comment_bounding_box = self.pixel_to_point_bounding_box(pdf_height, comment_pixel_bounding_box)  # Convert pixel values to point
+
+                    
+                    comment_texts = []
+                    
+                    for element in text_layout:
+                        if isinstance(element, LTTextContainer):
+                            e_x1, e_y1, e_x2, e_y2 = element.bbox
+                            e_center = ((e_x1 + e_x2) / 2, (e_y1 + e_y2) / 2)
+                            
+                            if inside(e_center, comment_bounding_box):
+                                comment_texts.append(element.get_text())
+                    
+                    comments.append(' '.join(comment_texts))
+                
+                caption_box = image_layout_result.get('caption', None)
+                if caption_box:
+                    caption_texts = []
+                    caption_pixel_bounding_box = caption_box.coordinates
+                    caption_bounding_box = self.pixel_to_point_bounding_box(pdf_height, caption_pixel_bounding_box)  # Convert pixel values to point
+                    
+                    for element in text_layout:
+                        if isinstance(element, LTTextContainer):
+                            e_x1, e_y1, e_x2, e_y2 = element.bbox
+                            e_center = ((e_x1 + e_x2) / 2, (e_y1 + e_y2) / 2)
+                            
+                            if inside(e_center, caption_bounding_box):
+                                caption_texts.append(element.get_text())
+                    
+                    captions.append(' '.join(caption_texts))
+                
+                description = f'Caption: {" ".join(captions)}\nComments: {" ".join(comments)}'
+                data = description + '\n' + md_text
                 single_meta_data["data"] = data
                 chunks.append(data)
-                meta_datas.append(single_meta_data)                
-            elif image_layout_result.type == 'Figure':
-                single_meta_data["source_type"] = 'image'
-                crop_image = image_layout_result.crop_image(np.array(image)) # numpy array                
-                single_meta_data["data"] = str(crop_image)
-                description = '이미지에유' # 캡션 + comment 추가
-                # 여기서 이미지캡션과 연결하고, 없으면 걍 버리기
-                chunks.append(description)
                 meta_datas.append(single_meta_data)
+            elif image_layout_result['type'] == 'figure' or image_layout_result['type'] == 'graph':
+                single_meta_data["source_type"] = 'image'
+                # crop_image = image_layout_result.crop_image(np.array(image))
+                crop_image = image.crop(pixel_bounding_box)
+                
+                if image_layout_result['type'] == 'figure':
+                    contents = clova_ocr_api.get_text(np.array(crop_image))
+
+                single_meta_data["data"] = str(crop_image)
+                
+                # Extract caption
+                caption_box = image_layout_result.get('caption', None)
+                captions = []
+                if caption_box:
+                    caption_pixel_bounding_box = caption_box.coordinates
+                    caption_bounding_box = self.pixel_to_point_bounding_box(pdf_height, caption_pixel_bounding_box)  # Convert pixel values to point
+                    caption_texts = []
+                    
+                    for element in text_layout:
+                        if isinstance(element, LTTextContainer):
+                            e_x1, e_y1, e_x2, e_y2 = element.bbox
+                            e_center = ((e_x1 + e_x2) / 2, (e_y1 + e_y2) / 2)
+                            
+                            if inside(e_center, caption_bounding_box):
+                                caption_texts.append(element.get_text())
+                    
+                    captions.append(' '.join(caption_texts))
+
+                caption_text = f'Caption: {" ".join(captions)}'
+                for content in self.text_splitter.split_text(contents):
+                    chunk = caption_text + '\n' + content
+                    chunks.append(chunk)
+                    meta_datas.append(single_meta_data)
         return chunks, meta_datas

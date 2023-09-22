@@ -80,7 +80,7 @@ class SearchTool(BaseTool):
         query = query.replace('"', '').replace("'", '')
         if question is None:
             question = query
-        search_result_list = self.search(query, category='google', top_k=1)['google_search']
+        search_result_list = self.search(query, category='google', top_k=10)['google_search']
         if len(search_result_list) == 0:
             return {
                 "status": "error",
@@ -88,6 +88,8 @@ class SearchTool(BaseTool):
             }
         chunk = search_result_list[0]
         url = chunk['data_path']
+        # 여기서 chain을 사용하여 전체 검색결과에서 답을 찾을 수 있는지 확인한다.
+        # 결과는 답이 나오거나 or 추가 검색을 위한 url이 나온다.
         single_webpage_result = self.search_by_url_tool._run(url)
         if single_webpage_result['status'] == 'error':
             return single_webpage_result

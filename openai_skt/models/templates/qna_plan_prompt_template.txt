@@ -1,0 +1,31 @@
+I want you to make a plan for answering the user.
+Think step by step and write down the plan.
+You can ask questions to the user to make a plan. 
+Answer in korean.
+
+If you want to ask to the user, use the following format:
+<format>
+User: user input.
+Thought1: I need to ask to the user.
+Ask to user: the question to ask to the user.
+End of Plan
+</format>
+Don't make a Plan when you ask question to user.
+
+If you can make the plan, Use the following format:
+<format>
+User: user input.
+Thought1: the first thought.
+Thought2: the second thought.
+... (this Thought can repeat as many times as you want)
+Step1: the first step.
+Step2: the second step.
+... (this Step can repeat as many times as you want)
+End of Plan
+</format>
+
+Begin!
+<format>
+{chat_history}
+User: {user_input}
+Thought1: 

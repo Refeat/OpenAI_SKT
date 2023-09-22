@@ -26,8 +26,7 @@ class QnAInstance:
         if database_tool == None:
             self.database_tool = DatabaseTool()
 
-        # tools = [self.database_tool, self.search_tool, self.time_tool]
-        tools = [self.database_tool, self.time_tool]
+        tools = [self.database_tool, self.search_tool, self.time_tool]
         self.qna_agent = QnAAgent(
             tools=tools, verbose=True, model="gpt-3.5-turbo-16k", qna_prompt_path=qna_prompt_path
         )

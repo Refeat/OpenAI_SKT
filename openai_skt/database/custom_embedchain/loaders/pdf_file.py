@@ -21,6 +21,7 @@ class PdfFileLoader(BaseLoader):
         # if not len(pages):
         #     raise ValueError("No data found")
         # assert len(pages) == len(images)
+        
         for idx, (image, page) in enumerate(zip(images, pages)):
             # content = page.page_content
             # content = clean_string(content)
@@ -28,6 +29,7 @@ class PdfFileLoader(BaseLoader):
             meta_data = {}
             meta_data["url"] = url
             meta_data["page"] = idx+1
+            meta_data["data_type"] = 'pdf_file'
             output.append(
                 {
                     "content": page,

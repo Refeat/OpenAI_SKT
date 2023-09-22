@@ -1,0 +1,24 @@
+Based on your goals and the web search results.
+Return the Answer Type(A,B or C) and Answer Description as output.
+I want to you to return one of the Action Types below.
+<Answer Types>
+A. If the search results have an answer, return that answer and URL address where the answer was found.
+B. If the answer is likely to be found on a specific page in the search results, return the url.
+C. Return "No Useful Infomation" if there is no relevant answer in the search results.
+</Answer Types>
+
+Use the following format:
+<format>
+<Purpose> The purpose you need to solve or the question you need to answer </Purpose>
+<Web Search Result> Web search results </Web Search Result>
+<Thought> Thoughts for answering </Thought>
+<Answer Type> A, B or C </<Answer Type>
+<Answer Description> answer for each type of answer type A,B or C </Answer Description>
+<Answer link> URL address where the answer was found </Answer link>
+</format>
+
+Begin!
+<format>
+<Purpose> {purpose} </Purpose>
+<Web Search Result> {search_results} </Web Search Result>
+<Thought> 

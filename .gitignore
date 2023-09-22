@@ -20,3 +20,4 @@ openai_skt/database/crawling/kostat/files/
 openai_skt/database/crawling/koreakr/samples.zip
 openai_skt/database/crawling/koreakr/samples/
 openai_skt/tutorials/Screenshots/
+openai_skt/database/chunk/layout-parser-checkpoint/model_final.pth
