@@ -68,7 +68,9 @@ This comprehensive preprocessing and fine-tuning approach enhances GPT's ability
 
 
 ## Embedding
-![audrey AI_본선](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/e91c51d6-661d-4403-884d-acd42fab48b7)
+
+
+![audrey AI_본선](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/06d6576f-35cc-4d63-915b-8c5e13858e38)
 
 
 ## Backend Structure
