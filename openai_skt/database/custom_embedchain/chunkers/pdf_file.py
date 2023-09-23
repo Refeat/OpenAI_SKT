@@ -1,5 +1,6 @@
 import re
 import copy
+import time
 import hashlib
 from typing import Optional
 
@@ -52,7 +53,10 @@ class PdfFileChunker(BaseChunker):
         documents = []
         ids = []
         idMap = {}
+        # print(111)
         datas = loader.load_data(src)
+        # print(222)
+        
         metadatas = []
         for data in datas:
             text_layout = data["content"] # From pdf file
@@ -63,9 +67,9 @@ class PdfFileChunker(BaseChunker):
             # add data type to meta data to allow query using data type
             # meta_data["data_type"] = self.data_type.value
             url = meta_data["url"]
-
+            # print(2222)
             chunks, meta_datas = self.get_chunks(text_layout, image, meta_data)
-            
+            # print(3333)
             for chunk, meta_data in zip(chunks, meta_datas):
                 chunk_id = hashlib.sha256((chunk + url).encode()).hexdigest()
                 if idMap.get(chunk_id) is None:
@@ -73,6 +77,7 @@ class PdfFileChunker(BaseChunker):
                     ids.append(chunk_id)
                     documents.append(chunk)
                     metadatas.append(meta_data)
+        # print(333)
         return {
             "documents": documents,
             "ids": ids,
@@ -100,9 +105,10 @@ class PdfFileChunker(BaseChunker):
         meta_datas = []
         # return self.text_splitter.split_text(content)
         # image_layout_results = self.layout_model.detect(image)
+        # print(111111)
         image_layout_results = self.layout_model(image_array=image)
         pdf_height = text_layout.height
-        for image_layout_result in image_layout_results: # title, figure, text, table, list
+        for image_layout_result in image_layout_results: # title, figure, text, table, list    
             pixel_bounding_box = image_layout_result['main_bbox'].coordinates # Get the four corners pixel values of the box (x1, y1, x2, y2)
             bounding_box = self.pixel_to_point_bounding_box(pdf_height, pixel_bounding_box)  # Convert pixel values to point
 
@@ -125,24 +131,34 @@ class PdfFileChunker(BaseChunker):
                 for _, _, text in texts_inside:
                     description += text.replace('\n', '')
                 description = re.sub(' +', ' ', description)
-                single_meta_data["data"] = description
+                
                 for chunk in self.text_splitter.split_text(description):
                     chunks.append(chunk)
+                    single_meta_data["data"] = chunk
                     meta_datas.append(single_meta_data)
             elif image_layout_result['type'] == 'table':
+                # print('table11111')
                 single_meta_data["source_type"] = 'table'
                 x1, y1, x2, y2 = bounding_box
-                tables = camelot.read_pdf(single_meta_data['url'], pages=str(single_meta_data['page']), table_areas=[f'{x1},{y2},{x2},{y1}'])
+                # TODO DO
+                import os
+                # print(os.path.join("/home/ubuntu/draft/", single_meta_data['url']))
+                # tables = camelot.read_pdf(os.path.join("/home/ubuntu/draft/", single_meta_data['url']), pages=str(single_meta_data['page']), table_areas=[f'{x1},{y2},{x2},{y1}'])
+                tables = camelot.read_pdf(os.path.join("/home/ubuntu/data/kostat/files", single_meta_data['url']), pages=str(single_meta_data['page']), table_areas=[f'{x1},{y2},{x2},{y1}'])
+                # tables = camelot.read_pdf(single_meta_data['url'], pages=str(single_meta_data['page']), table_areas=[f'{x1},{y2},{x2},{y1}'])
                 if len(tables) == 0:
-                    print('No table found')
+                    # print('No table found')
                     continue
                 
-                md_text = tables[0].df.to_markdown()
+                try:
+                    md_text = tables[0].df.to_markdown()
+                except:
+                    print('error on markdown')
+                    continue
                 
                 # Extract comments and caption
                 comments = []
                 captions = []
-                
                 comment_boxes = image_layout_result.get('comments', [])
                 for comment_box in comment_boxes:
                     comment_pixel_bounding_box = comment_box.coordinates
@@ -160,7 +176,6 @@ class PdfFileChunker(BaseChunker):
                                 comment_texts.append(element.get_text())
                     
                     comments.append(' '.join(comment_texts))
-                
                 caption_box = image_layout_result.get('caption', None)
                 if caption_box:
                     caption_texts = []
@@ -190,7 +205,7 @@ class PdfFileChunker(BaseChunker):
                 if image_layout_result['type'] == 'figure':
                     contents = clova_ocr_api.get_text(np.array(crop_image))
 
-                single_meta_data["data"] = str(crop_image)
+                single_meta_data["data"] = str(np.array(crop_image))
                 
                 # Extract caption
                 caption_box = image_layout_result.get('caption', None)
@@ -211,8 +226,13 @@ class PdfFileChunker(BaseChunker):
                     captions.append(' '.join(caption_texts))
 
                 caption_text = f'Caption: {" ".join(captions)}'
-                for content in self.text_splitter.split_text(contents):
-                    chunk = caption_text + '\n' + content
+                if image_layout_result['type'] == 'figure':
+                    for content in self.text_splitter.split_text(contents):
+                        chunk = caption_text + '\n' + content
+                        chunks.append(chunk)
+                        meta_datas.append(single_meta_data)
+                else:
+                    chunk = caption_text
                     chunks.append(chunk)
                     meta_datas.append(single_meta_data)
         return chunks, meta_datas

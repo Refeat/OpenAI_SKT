@@ -22,6 +22,11 @@ class PdfFileLoader(BaseLoader):
         #     raise ValueError("No data found")
         # assert len(pages) == len(images)
         
+        # only for save kostat and koreakr pdf file
+        # TODO DO
+        import os
+        url = os.path.basename(url)
+
         for idx, (image, page) in enumerate(zip(images, pages)):
             # content = page.page_content
             # content = clean_string(content)
@@ -37,4 +42,6 @@ class PdfFileLoader(BaseLoader):
                     "image": image, # 각 페이지의 이미지
                 }
             )
+            if idx > 30:
+                return output
         return output

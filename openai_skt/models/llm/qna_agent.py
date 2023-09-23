@@ -160,9 +160,8 @@ class QnAAgent:
         return result
     
     def parse_input(self, question, qna_history):
-        input_qna_history = qna_history[-2:] # List[List[str]]
         input_qna_history = ''
-        for single_chat in input_qna_history:
+        for single_chat in qna_history[-2:]:
             input_qna_history += f'User: {single_chat[0]}'
             input_qna_history += f'AI: {single_chat[1]}'
         input_dict = {'input': question, 'qna_history': input_qna_history}

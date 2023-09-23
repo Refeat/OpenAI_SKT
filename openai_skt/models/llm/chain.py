@@ -8,6 +8,14 @@ from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.schema import LLMResult
+from langchain.document_loaders import WebBaseLoader
+from langchain.indexes import VectorstoreIndexCreator
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import Chroma
+from langchain.retrievers import SVMRetriever
+from langchain.chains import RetrievalQA
+from langchain.chat_models import ChatOpenAI
 
 current_file_folder_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -26,6 +34,37 @@ class CustomStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
         # sys.stdout.flush()
         if self.queue is not None:
             self.queue.append(token)
+            
+    def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
+        """Run when LLM ends running."""
+        if self.queue is not None:
+            self.queue.append('<br/>')
+
+class ReDraftCustomStreamingStdOutCallbackHandler(StreamingStdOutCallbackHandler):
+    def __init__(
+        self,
+        *,
+        queue,
+    ) -> None:
+        super().__init__()
+        self.queue = queue
+        self.is_end = False
+        self.last_tokens = []
+
+    def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
+        """Run on new LLM token. Only available when streaming is enabled."""
+        # sys.stdout.write(token)
+        # sys.stdout.flush()
+        # if self.queue is not None:
+        #     self.queue.append(token)
+        if len(self.last_tokens) == 10:
+            self.last_tokens.pop(0)
+        self.last_tokens.append(token)
+        if self.is_end:
+            self.queue.append(token)
+        if 'Edited draft:' in ''.join(self.last_tokens):
+            self.is_end = True
+        
             
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
         """Run when LLM ends running."""
@@ -86,27 +125,43 @@ class KeywordsChain(BaseChain):
     async def arun(self, purpose:str=None, table:str=None):
         return await super().arun(purpose=purpose, table=table)
 
+# class DraftChain(BaseChain):
+#     def __init__(self, 
+#                 draft_template=None, 
+#                 input_variables:List[str]=["purpose", "draft", "database", "single_table", "table"],
+#                 draft_template_path=os.path.join(current_file_folder_path, '../templates/draft_prompt_template.txt'),
+#                 model='gpt-3.5-turbo-16k', 
+#                 verbose=False,
+#                 streaming=True) -> None:
+#         super().__init__(template=draft_template, input_variables=input_variables, template_path=draft_template_path, model=model, verbose=verbose, streaming=streaming)
+#         self.streaming = streaming
+
+#     def run(self, database=None, purpose=None, table=None, draft=None, single_table=None, queue=None):
+#         if self.streaming:
+#             callbacks=[CustomStreamingStdOutCallbackHandler(queue=queue)]
+#         else:
+#             callbacks=None
+#         return self.chain.run(callbacks=callbacks, database=database, purpose=purpose, table=table, draft=draft, single_table=single_table)
+    
+#     async def arun(self, database=None, purpose=None, table=None, draft=None, single_table=None):
+#         return await super().arun(database=database, purpose=purpose, table=table, draft=draft, single_table=single_table)
+       
 class DraftChain(BaseChain):
     def __init__(self, 
                 draft_template=None, 
                 input_variables:List[str]=["purpose", "draft", "database", "single_table", "table"],
                 draft_template_path=os.path.join(current_file_folder_path, '../templates/draft_prompt_template.txt'),
                 model='gpt-3.5-turbo-16k', 
-                verbose=False,
-                streaming=True) -> None:
-        super().__init__(template=draft_template, input_variables=input_variables, template_path=draft_template_path, model=model, verbose=verbose, streaming=streaming)
-        self.streaming = streaming
+                verbose=False,) -> None:
+        super().__init__(template=draft_template, input_variables=input_variables, template_path=draft_template_path, model=model, verbose=verbose)
 
-    def run(self, database=None, purpose=None, table=None, draft=None, single_table=None, queue=None):
-        if self.streaming:
-            callbacks=[CustomStreamingStdOutCallbackHandler(queue=queue)]
-        else:
-            callbacks=None
-        return self.chain.run(callbacks=callbacks, database=database, purpose=purpose, table=table, draft=draft, single_table=single_table)
+    def run(self, database=None, purpose=None, table=None, draft=None, single_table=None):
+        return self.chain.run(database=database, purpose=purpose, table=table, draft=draft, single_table=single_table)
     
     async def arun(self, database=None, purpose=None, table=None, draft=None, single_table=None):
         return await super().arun(database=database, purpose=purpose, table=table, draft=draft, single_table=single_table)
        
+
 class TableChain(BaseChain):
     def __init__(self, 
                 table_template=None, 
@@ -182,6 +237,82 @@ class UnifiedSummaryChunkChain(BaseChain):
     
     async def arun(self,chunk:str=None, question:str=None):
         return await super().arun(document=chunk, question=question)
+
+class ReDraftChain(BaseChain):
+    def __init__(self, 
+                summary_chunk_template=None, 
+                input_variables:List[str]=["document", "draft", "single_table"],
+                summary_chunk_template_path=os.path.join(current_file_folder_path, '../templates/re_draft_prompt_template.txt'),
+                model='gpt-3.5-turbo-16k', 
+                verbose=False,
+                streaming=True) -> None:
+        
+        super().__init__(template=summary_chunk_template, input_variables=input_variables, template_path=summary_chunk_template_path, model=model, verbose=verbose, streaming=streaming)
+        self.streaming = streaming
+    
+    def run(self, database=None, draft=None, single_table=None, queue=None):
+        if self.streaming:
+            callbacks=[ReDraftCustomStreamingStdOutCallbackHandler(queue=queue)]
+        else:
+            callbacks=None
+        return self.chain.run(callbacks=callbacks, document=database, single_table=single_table, draft=draft)
+    
+    async def arun(self,chunk:str=None, question:str=None):
+        return await super().arun(document=chunk, question=question)
+
+    
+class QnALangChain:
+    def __init__(self, verbose=False) -> None:
+        self.llm = ChatOpenAI(model_name="gpt-4", temperature=0, verbose=verbose)
+
+    def run(self, url:str=None, question:str=None):
+        loader = WebBaseLoader(url)
+        data = loader.load()
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size = 500, chunk_overlap = 0)
+        all_splits = text_splitter.split_documents(data)
+        vectorstore = Chroma.from_documents(documents=all_splits, embedding=OpenAIEmbeddings())
+        docs = vectorstore.similarity_search(question)
+        svm_retriever = SVMRetriever.from_documents(all_splits,OpenAIEmbeddings())
+        docs_svm=svm_retriever.get_relevant_documents(question)
+        
+        qa_chain = RetrievalQA.from_chain_type(self.llm,retriever=vectorstore.as_retriever())
+        result = qa_chain({"query": question})['result']
+        return result
+    
+    async def arun(self,chunk:str=None, question:str=None):
+        return await super().arun(document=chunk, question=question)
+
+class TableQueryChain(BaseChain):
+    def __init__(self, 
+                table_query_template=None, 
+                input_variables:List[str]=["table"],
+                table_query_template_path=os.path.join(current_file_folder_path, '../templates/table_query_prompt_template.txt'),
+                model='gpt-4', 
+                verbose=False) -> None:
+        
+        super().__init__(template=table_query_template, input_variables=input_variables, template_path=table_query_template_path, model=model, verbose=verbose)
+
+    def run(self, table:str=None):
+        return super().run(table=table)
+    
+    async def arun(self, table:str=None):
+        return await super().arun(table=table)
+    
+class SuggestionCheckChain(BaseChain):
+    def __init__(self, 
+                suggestion_query_template=None, 
+                input_variables:List[str]=["table", "suggestion"],
+                suggestion_query_template_path=os.path.join(current_file_folder_path, '../templates/suggestion_query_prompt_template.txt'),
+                model='gpt-4', 
+                verbose=False) -> None:
+        
+        super().__init__(template=suggestion_query_template, input_variables=input_variables, template_path=suggestion_query_template_path, model=model, verbose=verbose)
+
+    def run(self, table:str=None, suggestion:str=None):
+        return super().run(table=table, suggestion=suggestion)
+    
+    async def arun(self, table:str=None, suggestion:str=None):
+        return await super().arun(table=table, suggestion=suggestion)
 
 class QnAPlanChain(BaseChain):
     def __init__(self, 

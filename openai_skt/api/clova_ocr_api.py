@@ -17,9 +17,10 @@ except:
     CLOVA_OCR_API_KEY = config['NAVER']['CLOVA_OCR_API_KEY']
 
 import json
-import requests
 import uuid
 import time
+import requests
+import aiohttp
 
 import cv2
 import numpy as np
@@ -78,7 +79,49 @@ class ClovaOCRAPI:
             print(f"Error: {response.status_code}")
             return ''
 
+    async def async_get_text(self, image_input):
+        if isinstance(image_input, str):
+            # Get the file extension and use it as the format
+            file_extension = os.path.splitext(image_input)[1][1:].lower()
+            with open(image_input, 'rb') as f:
+                image_data = f.read()
+        elif isinstance(image_input, np.ndarray):
+            file_extension = 'jpg'  # Assuming JPEG format for NumPy array
+            is_success, im_buf_arr = cv2.imencode(".jpg", image_input)
+            if not is_success:
+                print("Error encoding the image to byte stream")
+                return ''
+            image_data = bytes(im_buf_arr)
+        else:
+            print("Unsupported input type")
+            return ''
+
+        request_json = {
+            'images': [
+                {
+                    'format': file_extension,
+                    'name': 'demo'
+                }
+            ],
+            'requestId': str(uuid.uuid4()),
+            'version': 'V2',
+            'timestamp': int(round(time.time() * 1000))
+        }
+
+        payload = {'message': json.dumps(request_json).encode('UTF-8')}
+        files = {'file': image_data}
+        headers = {'X-OCR-SECRET': self.api_key}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(self.api_url, headers=headers, data=payload, files=files) as response:
+                if response.status == 200:
+                    res = await response.json()
+                    concatenated_text = self.concatenate_text_from_json(res)
+                    return concatenated_text
+                else:
+                    print(f"Error: {response.status}")
+                    return ''
 
 if __name__ == '__main__':
     clova_ocr_api = ClovaOCRAPI()
-    print(clova_ocr_api.get_text('/root/OpenAI_SKT/openai_skt/tutorials/test_data/test20.png'))
+    print(clova_ocr_api.get_text('/home/ubuntu/draft/writer/openai_skt/tutorials/test_data/이전.png'))

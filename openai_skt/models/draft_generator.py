@@ -2,28 +2,41 @@ import re
 from typing import List
 
 from modules import Draft, DraftPart
-from models.llm import DraftChain, ImageGenerationChain
+from models.llm import DraftChain, ImageGenerationChain, TableQueryChain, ReDraftChain
 from api import DalleAPI
 
 class DraftGeneratorInstance:
     def __init__(self, verbose=False, draft_chain=None) -> None:
         self.draft_chain = draft_chain
         if draft_chain == None:
-            self.draft_chain = DraftChain(verbose=verbose)
+            self.draft_chain = DraftChain(verbose=True)
+        ## TODO gkggggg
         self.image_generation_chain = ImageGenerationChain(verbose=verbose)
+        self.table_query_chain = TableQueryChain(verbose=verbose)
         self.dalle_api = DalleAPI()
+        # self.redraft_chain = ReDraftChain(verbose=verbose)
+        self.redraft_chain = ReDraftChain(verbose=True)
 
     def run(self, purpose:str=None, table:str=None, database=None, draft_id=None, queue=None) -> Draft:
+        
         table_list = self.parse_table(table)
         draft = Draft(draft_id=draft_id, purpose=purpose, tables=table_list)
+        print(table_list)
+        print(len(table_list))
         for single_table in table_list:
-            chunk_list, data_text = self.parse_database(database, query=single_table)
-            single_draft = self.draft_chain.run(purpose=purpose, draft=draft.text, single_table=single_table, database=data_text, table=table, queue=queue)
+            # query = self.table_query_chain.run(table=single_table)
+            query = single_table
+            print(single_table)
+            chunk_list, data_text = self.parse_database(database, query=query)
+            # print(query, single_table, chunk_list)
+            # single_draft = self.draft_chain.run(purpose=purpose, draft=draft.text, single_table=single_table, database=data_text, table=table, queue=queue)
+            new_draft = self.draft_chain.run(purpose=purpose, draft=draft.text, single_table=single_table, database=data_text, table=table)
+            single_draft = self.redraft_chain.run(draft=new_draft, database=data_text, single_table=single_table, queue=queue)
             draft_part = DraftPart(text=single_draft, single_table=single_table, files=chunk_list)
             draft.add_draft_part(draft_part)
         image_url = self.generate_image(table)
         if image_url is not None:
-            draft.text = f"\n![Generated Image]({image_url})\n" + draft.text
+            draft.text = f"\n![Generated Image]({image_url})\n\n" + draft.text
         
         return draft
     
@@ -33,7 +46,7 @@ class DraftGeneratorInstance:
         return draft
     
     def parse_database(self, database, query:str=None)->str:
-        chunk_list = database.query(query=query)
+        chunk_list = database.query(query=query, max_token=4096)
         data_text = ''
         for idx, chunk in enumerate(chunk_list): # data is Chunk object
             data_text += f'{idx+1}. {chunk.data}\n'

@@ -12,6 +12,7 @@ class DraftEditInstance:
                 search_tool=None,
                 database_tool=None,
                 graph_tool=None,
+                search_by_url_tool=None,
                 summary_chunk_template=None,
                 summary_chunk_input_variables=None,
                 graph_template=None,
@@ -21,7 +22,7 @@ class DraftEditInstance:
         self.graph_template = graph_template
         self.graph_input_variables = graph_input_variables
 
-        self.search_by_url_tool = SearchByURLTool()
+        self.search_by_url_tool = search_by_url_tool
         self.search_tool = search_tool
         self.database_tool = database_tool
         self.graph_tool = graph_tool
@@ -32,10 +33,13 @@ class DraftEditInstance:
             self.database_tool = DatabaseTool()
         if graph_tool == None:
             self.graph_tool = GraphTool()
+        if search_by_url_tool == None:
+            self.search_by_url_tool = SearchByURLTool()
 
-        tools = [self.database_tool, self.search_tool, self.graph_tool]
+        # tools = [self.database_tool, self.search_tool, self.graph_tool, self.search_by_url_tool]
+        tools = [self.database_tool, self.graph_tool]
 
-        self.draft_edit_agent = DraftEditAgent(tools=tools, verbose=verbose, model='gpt-3.5-turbo-16k')
+        self.draft_edit_agent = DraftEditAgent(tools=tools, verbose=True, model='gpt-4')
 
     def run(self, database, query:str, draft, draft_part:str):
         tools = self.set_tools(database)
@@ -51,7 +55,8 @@ class DraftEditInstance:
     def set_tools(self, database):
         database_tool = DatabaseTool()
         database_tool.set_database(database)
-        tools = [database_tool, self.search_tool, self.graph_tool]
+        # tools = [database_tool, self.search_tool, self.graph_tool]
+        tools = [database_tool, self.graph_tool]
         return tools
     
     def parse_result(self, draft, draft_part:str, modified_draft_part:str):

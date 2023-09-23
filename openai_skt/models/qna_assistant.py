@@ -28,7 +28,7 @@ class QnAInstance:
 
         tools = [self.database_tool, self.search_tool, self.time_tool]
         self.qna_agent = QnAAgent(
-            tools=tools, verbose=True, model="gpt-3.5-turbo-16k", qna_prompt_path=qna_prompt_path
+            tools=tools, verbose=True, model="gpt-4", qna_prompt_path=qna_prompt_path
         )
 
     def run(self, database, question: str, qna_history: List[List[str]], queue=None):

@@ -1,0 +1,31 @@
+Use the document and be specific in the writing.
+Be as specific as possible with numbers and concrete information.
+The output format is Markdown.
+Answer in Korean.
+
+write specific to the information in the document, but keep the table of contents below.
+<table>
+{single_table}
+</table>
+
+Follow below steps to rewrite the draft.
+step1. Lists only the useful and specific information that will help you edit the draft from the document. Be sure to list specifics such as names, dates, events, and incidents from the document.
+step2. Rewrite the draft based on the information listed. Draw tables or images in Markdown as well.
+
+Use below format:
+<format>
+Listed Useful and Specific Information: list of useful and specific information. Be sure to list specifics such as names, dates, events, and incidents from the document.
+Edited draft: 
+</format>
+
+Begin!
+
+<Document>
+{document}
+</Document>
+
+<Drafts that need to be rewriting>
+{draft}
+</Drafts that need to be rewriting>
+
+Listed Useful and Specific Information: 

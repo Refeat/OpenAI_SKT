@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from langchain.tools import BaseTool
 
 from database.database import DataBase
-from models.llm import UnifiedSummaryChunkChain
+from models.llm import UnifiedSummaryChunkChain, SummaryChunkChain
 
 class DatabaseToolInputSchema(BaseModel):
     query: str
@@ -13,7 +13,7 @@ class DatabaseToolInputSchema(BaseModel):
 
 class DatabaseTool(BaseTool):
     name = "database_tool"
-    description = "A tool to get data with from database. The input consists of a 'query' and a 'question', where 'query' is the search query and 'question' is the information you want to get. For example, {'query': 'bitcoin price history', 'question': 'what was the price of bitcoin in 2022?'} would be the input if you want to know the price of bitcoin in 2022. Input must contain both a query and a question."
+    description = "A tool to get data with from database. The input consists of a 'query', 'output_format' and a 'question', where 'query' is the search query, 'output_format' is one of [text, table, image] and 'question' is the information you want to get. For example, If a user wants to plot the Bitcoin price history for 2022, the input would be {'query': 'bitcoin price history', 'output_format': 'image', 'question': 'Plot the Bitcoin price history for 2022'}. Input must contain both a query and a question in korean."
     database: DataBase= None
     args_schema: Optional[Type[BaseModel]] = DatabaseToolInputSchema
     """Pydantic model class to validate and parse the tool's input arguments."""
@@ -22,7 +22,8 @@ class DatabaseTool(BaseTool):
     def __init__(self, summary_chunk_chain=None) -> None:
         super().__init__()
         if summary_chunk_chain is None:
-            self.summary_chunk_chain = UnifiedSummaryChunkChain()
+            # self.summary_chunk_chain = UnifiedSummaryChunkChain()
+            self.summary_chunk_chain = SummaryChunkChain()
         else:
             self.summary_chunk_chain = summary_chunk_chain
 
@@ -45,15 +46,19 @@ class DatabaseTool(BaseTool):
                 return {k: v for k, v in result.dict().items() if k in tool_input}
         return tool_input
 
-    def _run(self, query, question=None) -> dict:
+    def _run(self, query, output_format='text', question=None) -> dict:
         if question is None:
             question = query
-        chunks = self.database.query(query)
+        print(query, output_format, question)
+        chunks1 = self.database.query(query, top_k=2, where={'source_type':output_format}) # 통계청
+        chunks2 = self.database.query(query, top_k=3) # 그 외
+        chunks = chunks1 + chunks2
         data = ''
         for idx, chunk in enumerate(chunks):
             data += f'chunk{idx+1}: {chunk.data}\n'
-        summary_result = self.summary_chunk_chain.run(chunk=data, question=question)
-        return summary_result
+        # summary_result = self.summary_chunk_chain.run(chunk=data, question=question)
+        # summary_result = self.summary_chunk_chain.run(chunk=data)
+        return data
     
     async def _arun(self, query) -> dict:
         chunks = self.database.query(query)

@@ -1,20 +1,19 @@
-I want you to be the writer who writes the draft for the article.
-I will give you the topic of the article, table of the contents, the draft written so far, and background knowledge.
-Write the part that corresponds to {single_table} after the draft written so far.
+I want you to be the writer who writes the Essay.
+I will give you the topic of the essay, table of contents, documents, and the Essay written so far.
 Say only what is newly written. But if there is none, say nothing, and don't give me an explanation.
+Write the part that corresponds to {single_table} after the Essay written so far.
 The output format is Markdown.
 Answer in Korean.
 
-background knowledge:
-===
+<documents>
 {database}
-===
+</documents>
 
-topic:
-{purpose}
+<topic>{purpose}</topic>
 
-table of contents:
+<table of contents>
 {table}
+</table of contents>
 
-draft written so far:
+Essay written so far:
 {draft}
