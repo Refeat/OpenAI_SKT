@@ -73,28 +73,36 @@ This comprehensive preprocessing and fine-tuning approach enhances GPT's ability
 ![audrey AI_본선](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/06d6576f-35cc-4d63-915b-8c5e13858e38)
 
 
-## Backend Structure
-<p align="center"><img width=80% src="https://github.com/san9min/OpenAI_SKT/assets/92682815/f17c88da-661b-4b9b-9d41-7dd346e139e6" alt="backend"></a></p>
 
 
 ## Pipeline
-![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/262b0562-2198-4558-b102-8c84b0a1b47c)
+![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/5e74f903-6858-4e0a-b403-1b95c754bde5)
+
+
+
+
+## Backend Structure
+<p align="center"><img width=80% src="https://github.com/san9min/OpenAI_SKT/assets/92682815/f17c88da-661b-4b9b-9d41-7dd346e139e6" alt="backend"></a></p>
 
 
 ## Result
 
 ### Semantic Search
-![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/254f459a-a141-4188-bcf0-2e3c7c3fe7c1)
+![audrey AI_본선](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/a75ac6e8-12df-4a50-9d5f-48bf6b1c9af0)
+
+
 
 ### Table Understanding
-![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/58fa0e0e-79ee-4d62-932e-0a3b09b76b91)
+![audrey AI_본선](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/f70213a8-fcc9-49f4-8020-cb1c5e933947)
+
 
 ### Graph Tool (Agent)
+![audrey AI_본선](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/98826687-2bd4-4df4-a590-19a0676665da)
 
-![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/93dc5db5-8d25-4f9c-9626-ee6ce5fb48a8)
 
 ### Report
 ![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/a3a82511-7a18-457f-b5d2-836f4d784c6e)
+
 
 
 ## Citations
