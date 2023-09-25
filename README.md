@@ -76,7 +76,7 @@ This comprehensive preprocessing and fine-tuning approach enhances GPT's ability
 When you do research, you'll be collecting a variety of data types. We've made it possible to receive multiple types of data, not just text.
 
 ## Pipeline
-![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/5e74f903-6858-4e0a-b403-1b95c754bde5)
+![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/43593a06-09a7-4916-b99a-61c5d98fa673)
 
 Design our pipeline to work with you through the entire process
 
