@@ -76,7 +76,8 @@ This comprehensive preprocessing and fine-tuning approach enhances GPT's ability
 When you do research, you'll be collecting a variety of data types. We've made it possible to receive multiple types of data, not just text.
 
 ## Pipeline
-![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/43593a06-09a7-4916-b99a-61c5d98fa673)
+![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/90ef67e3-bca9-4115-9a22-fa6fa78b7e57)
+
 
 Design our pipeline to work with you through the entire process
 
@@ -108,7 +109,8 @@ We give our agents tools, so they can write Python code to plot graphs based on 
 
 
 ### Report
-![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/a3a82511-7a18-457f-b5d2-836f4d784c6e)
+
+![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/c9819a1e-a699-4042-8243-c8621eb527cd)
 
 This is the first draft of our model. Based on the data we put in, model write a good draft with useful tables and thumbnail images.
 
