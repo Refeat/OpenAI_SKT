@@ -77,6 +77,24 @@ This comprehensive preprocessing and fine-tuning approach enhances GPT's ability
 <p align="center"><img width=80% src="https://github.com/san9min/OpenAI_SKT/assets/92682815/f17c88da-661b-4b9b-9d41-7dd346e139e6" alt="backend"></a></p>
 
 
+## Pipeline
+![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/262b0562-2198-4558-b102-8c84b0a1b47c)
+
+
+## Result
+
+### Semantic Search
+![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/254f459a-a141-4188-bcf0-2e3c7c3fe7c1)
+
+### Table Understanding
+![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/58fa0e0e-79ee-4d62-932e-0a3b09b76b91)
+
+### Graph Tool (Agent)
+
+![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/93dc5db5-8d25-4f9c-9626-ee6ce5fb48a8)
+
+### Report
+![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/a3a82511-7a18-457f-b5d2-836f4d784c6e)
 
 
 ## Citations
