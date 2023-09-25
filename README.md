@@ -73,13 +73,12 @@ This comprehensive preprocessing and fine-tuning approach enhances GPT's ability
 
 ![audrey AI_본선](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/06d6576f-35cc-4d63-915b-8c5e13858e38)
 
-
-
+When you do research, you'll be collecting a variety of data types. We've made it possible to receive multiple types of data, not just text.
 
 ## Pipeline
 ![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/5e74f903-6858-4e0a-b403-1b95c754bde5)
 
-
+Design our pipeline to work with you through the entire process
 
 
 ## Backend Structure
@@ -91,20 +90,27 @@ This comprehensive preprocessing and fine-tuning approach enhances GPT's ability
 ### Semantic Search
 ![audrey AI_본선](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/a75ac6e8-12df-4a50-9d5f-48bf6b1c9af0)
 
+통계청 only returns results when keywords are matched, which makes searching difficult. We provide valuable material that is semantically similar.
 
 
 ### Table Understanding
+
 ![audrey AI_본선](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/f70213a8-fcc9-49f4-8020-cb1c5e933947)
 
+Tables contain a lot of useful information that has a structural counterpart. However, if you scrape them directly into text, GPT can't understand them very well and can't utilize them.
+In order to understand tables well, it is important to preprocess the structure of the table into a form that GPT can understand, rather than just scraping it. When scraping the table as it was, GPT didn't utilize the table information. But with our chunking method, the table was better understood and utilized.
 
 ### Graph Tool (Agent)
 ![audrey AI_본선](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/98826687-2bd4-4df4-a590-19a0676665da)
+
+GPT outputs text by default, so it can't generate visuals like graphs. 
+We give our agents tools, so they can write Python code to plot graphs based on the information they receive as text.
 
 
 ### Report
 ![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/a3a82511-7a18-457f-b5d2-836f4d784c6e)
 
-
+This is the first draft of our model. Based on the data we put in, model write a good draft with useful tables and thumbnail images.
 
 ## Citations
 
