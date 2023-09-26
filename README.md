@@ -47,7 +47,7 @@ It can now retrieve necessary information from databases or the web, and, based 
 ## Chunking Strategy
 
 <p align="center"><img width=100% src="https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/77cef516-43b6-45bc-a9a8-8b28a26657af" alt="chunking"></p>
-We conducted extensive preprocessing to ensure that GPT could better understand the data. This involved removing noise information and incorporating visual data to comprehend context and structural details.
+We conducted extensive preprocessing to ensure that GPT could better understand the data. This involved removing noise information (such as Ads, navigation bars, etc) and incorporating visual data to comprehend context and structural details.
 
 
 We obtained official authorization and fine-tuned Faster RCNN on a dataset comprising 200 images from the **통계청 (Korean Statistical Office)** and **정부 브리핑 (Government Briefings)**. 
@@ -112,7 +112,7 @@ We give our agents tools, so they can write Python code to plot graphs based on 
 
 ![image](https://github.com/audreyaiai/OpenAI_SKT/assets/92682815/c9819a1e-a699-4042-8243-c8621eb527cd)
 
-This is the first draft of our model. Based on the data we put in, model write a good draft with useful tables and thumbnail images.
+This is the first draft of our model. Based on the data we put in, model write a good draft with useful tables and thumbnail images (from DALL-E).
 
 ## Citations
 
