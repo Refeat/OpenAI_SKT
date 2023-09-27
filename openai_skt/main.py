@@ -1,6 +1,9 @@
 import os
 import configparser
 
+import sys
+sys.path.append('./database/chunk/VipsPython/Vips')
+
 from utils import load_api_key
 
 load_api_key()
@@ -87,8 +90,8 @@ async def main():
     #     embed_chain=embedchain,
     #     draft_edit_instance=draft_edit_instance,
     #     user_instance_path='./user/test_9/user_instance.json')
-    # user_files = [('/root/OpenAI_SKT/openai_skt/tutorials/test_data/(보도자료) 제20회 전국학생통계활용대회 결과 발표.pdf', 'pdf_file'), ('../../OpenAI_SKT/openai_skt/tutorials/test_data/X2Download.app - 월세=월급, 미친 집값의 나라에서 한국인이 발견한 기회 _ 고투조이 변성민 (128 kbps).mp3', 'audio')]
-    user_files = [('/root/OpenAI_SKT/openai_skt/tutorials/test_data/(보도자료) 제20회 전국학생통계활용대회 결과 발표.pdf', 'pdf_file')]
+    user_files = [('/root/OpenAI_SKT/openai_skt/tutorials/test_data/(보도자료) 제20회 전국학생통계활용대회 결과 발표.pdf', 'pdf_file'), ('../../OpenAI_SKT/openai_skt/tutorials/test_data/X2Download.app - 월세=월급, 미친 집값의 나라에서 한국인이 발견한 기회 _ 고투조이 변성민 (128 kbps).mp3', 'audio')]
+    # user_files = [('/root/OpenAI_SKT/openai_skt/tutorials/test_data/(보도자료) 제20회 전국학생통계활용대회 결과 발표.pdf', 'pdf_file')]
     project.add_files(files=user_files) # 유저가 직접 파일 추가
     start = time.time()
     database = project.parse_files_to_embedchain()
