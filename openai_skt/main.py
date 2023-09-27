@@ -60,7 +60,7 @@ async def main():
     #     embed_chain=embedchain,
     #     draft_edit_instance=draft_edit_instance,
     #     user_instance_path='./user/test_9/user_instance.json')
-    # table = project.get_table()
+    table = project.get_table()
     # print('table: ', table) # 10
     # # project.set_table(table="1.서론...") # 유저가 목차 변경
     # project.save()
@@ -74,10 +74,10 @@ async def main():
     #     embed_chain=embedchain,
     #     draft_edit_instance=draft_edit_instance,
     #     user_instance_path='./user/test_9/user_instance.json')
-    # keywords = project.get_keywords()
+    keywords = project.get_keywords()
     # print('keywords: ', keywords) # 13
     # project.set_keywords(keywords=['갈비탕', '감자탕', '해장국', '순대국', '뼈해장국', '곰탕', '설렁탕', '닭곰탕'])
-    # files = await project.async_search_keywords()
+    files = await project.async_search_keywords()
     # print('searched files: ', len(project.files), time.time()-start) # 81.67
     # project.save()
     # 아래는 프로젝트 로드
@@ -107,7 +107,7 @@ async def main():
     #     embed_chain=embedchain,
     #     draft_edit_instance=draft_edit_instance,
     #     user_instance_path='./user/test_9/user_instance.json')
-    # draft = project.get_draft(draft_id=2)
+    draft = project.get_draft(draft_id=2)
     # print('draft: ', draft, time.time()-start) # 1326
     project.save()
     # 아래는 프로젝트 로드

@@ -1,13 +1,7 @@
 import os
-import matplotlib.pyplot as plt
-import time
-from pycocotools.coco import COCO
+
 import layoutparser as lp
-import random
-import cv2
 from PIL import Image
-import torchvision.transforms as transforms
-import torch
 import numpy as np
 
 current_file_path = os.path.abspath(__file__)
