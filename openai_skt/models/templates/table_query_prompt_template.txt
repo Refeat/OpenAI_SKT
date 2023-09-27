@@ -1,0 +1,6 @@
+Generate only one search query for the table of contents below. 
+Just return the search query with no explanation.
+
+Table of Contents:
+{table}
+Search Query: 

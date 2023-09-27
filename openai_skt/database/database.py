@@ -2,6 +2,7 @@ import os
 import json
 import asyncio
 import pickle
+import tqdm
 from typing import List
 
 from embedchain.embedchain import EmbedChain
@@ -12,7 +13,7 @@ import threading
 class DataBase:
     # db = DataBase([(path1, type1), (path2, type2), ...]) 으로 선언
     # db[x][y] <- db의 x번째 data, 그 데이터의 y번째 chunk 반환
-    thread_num = 5
+    thread_num = 2
     semaphore = threading.Semaphore(thread_num)
     def __init__(self, files:List[tuple], embed_chain:EmbedChain):
         self.set_embed_chain(embed_chain)
@@ -71,10 +72,21 @@ class DataBase:
                 self.update_where()
                 self.update_token_num()
         except Exception as e:
-            print(f"Error with file: {filepath}. Error: {e}")
+            # print(f"Error with file: {filepath}. Error: {e}")
             return
         finally:
             self.semaphore.release()
+        # try:
+        #     hash_id = self.embed_chain.add(filepath, data_type)
+        #     # db_ids = list(self.embed_chain.db.get([], {'hash': hash_id}))
+        #     # if len(db_ids) != 0:
+        #     #     parsed_data = self.embed_chain.db.collection.get(ids=db_ids, include=["documents", "metadatas"])
+        #         # self.data[hash_id] = Data(hash_id, parsed_data, self.chunks)
+        #         # self.update_where()
+        #         # self.update_token_num()
+        # except Exception as e:
+        #     print(f"Error with file: {filepath}. Error: {e}")
+        #     return
 
     def update_token_num(self):
         self.token_num = 0
@@ -83,7 +95,7 @@ class DataBase:
         self.cost = self.token_num * 0.001 * 0.0002
 
     def add_files(self, files: List[tuple]):
-        for file in files:
+        for file in tqdm.tqdm(files):
             file_path, data_type = file
             self.add(file_path, data_type)
 
@@ -97,7 +109,8 @@ class DataBase:
                 self.update_where()
                 self.update_token_num()
         except Exception as e:
-            print(f"Error with file: {filepath}. Error: {e}")
+            # print(f"Error with file: {filepath}. Error: {e}")
+            pass
     
     async def async_add_files(self, files: List[tuple]):
         data_add_tasks = [self.async_add(file_path, data_type) for (file_path, data_type) in files]
@@ -107,11 +120,11 @@ class DataBase:
         data_add_threads = []
         for file_path, data_type in files:
             # Acquire a semaphore before starting a new thread
-            # self.semaphore.acquire()
-            acquired = self.semaphore.acquire(timeout=10)  # 10 seconds timeout
-            if not acquired:
-                print(f"Timeout while waiting to process {file_path}")
-                return
+            self.semaphore.acquire()
+            # acquired = self.semaphore.acquire(timeout=10)  # 10 seconds timeout
+            # if not acquired:
+                # print(f"Timeout while waiting to process {file_path}")
+                # return
             
             thread = threading.Thread(target=self.add, args=[file_path, data_type])
             data_add_threads.append(thread)
@@ -154,7 +167,7 @@ class DataBase:
                 thread.join()
 
 
-    def query(self, query, top_k:int = 5):
+    def query(self, query, where=None, top_k:int = 5, max_token=None):
         # input list of query ex) ['hi', 'hello']
         # output list of list of chunks zz ex) [[chunk1forquery1, chunk2forquery1, ..], [chunk1forquery2, chunk2forquery2, ...]]
         if isinstance(query, str):
@@ -163,12 +176,50 @@ class DataBase:
             query_texts = query
         else:
             raise TypeError('query should be str or list of str')
-        result_id_list = self.embed_chain.db.collection.query(query_texts = query_texts, n_results=top_k, where=self.where)['ids']
-        results = [self.ids_2_chunk(ids) for ids in result_id_list]
-        if isinstance(query, str):
-            return results[0]
-        elif isinstance(query, list):
-            return results
+
+        if where is None:
+            where = self.where
+        else:
+            where = {'$and':[where, self.where]}
+
+        if max_token is None:
+            result_id_list = self.embed_chain.db.collection.query(query_texts = query_texts, n_results=top_k, where=where)['ids']
+            results = [self.ids_2_chunk(ids) for ids in result_id_list]
+            if isinstance(query, str):
+                return results[0]
+            elif isinstance(query, list):
+                return results
+        else:
+            max_result_idx_list = self.embed_chain.db.collection.query(query_texts = query_texts, n_results=100, where=where)['ids']
+            results = []
+            for query_idx in range(len(query_texts)):
+                tmp = []
+                token_num = 0
+                for i in range(0, 100):
+                    if len(max_result_idx_list[query_idx]) > i:
+                        # print('self.chunks: ',self.chunks)
+                        # print("max_result_idx_list: ",max_result_idx_list)
+                        if len(self.chunks[max_result_idx_list[query_idx][i]].data) < 20:
+                            continue
+                        token_num += self.chunks[max_result_idx_list[query_idx][i]].token_num
+                        if token_num >= max_token:
+                            max_result_idx_list[query_idx] = max_result_idx_list[query_idx][:i]
+                            break
+                        tmp.append(max_result_idx_list[query_idx][i])
+                results.append(tmp)
+            
+            results = [self.ids_2_chunk(ids) for ids in results]
+
+            if isinstance(query, str):
+                return results[0]
+            elif isinstance(query, list):
+                return results
+        
+    def get_token_sum(self, ids:List[str]):
+        token_sum = 0
+        for cur_id in ids:
+            token_sum += self.chunks[cur_id].token_num
+        return token_sum
 
     def ids_2_chunk(self, ids:List[str]):
         # input list of id [hash1, hash2, ...] (this should be hash of 'chunk')
@@ -184,6 +235,17 @@ class DataBase:
             self.where = {
                 "$or": [{'hash': hash_id} for hash_id in self.data.keys()]
             }
+    
+    def delete(self, data_type, filepath):
+        # filepath 는 2022년 3분기 대구·경북지역 경제동향.pdf 와 같이 파일 이름만
+        for i in range(len(self.data)):
+            if self[i].data_type == data_type and self[i].data_path == filepath:
+                for chunk_id in self[i].chunks.keys():
+                    del self.chunks[chunk_id]
+                del self.data[self[i].hash]
+                self.update_where()
+                self.update_token_num()
+                return
 
     def save(self, database_path):
         # Get file extension

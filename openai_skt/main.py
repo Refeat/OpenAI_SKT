@@ -22,7 +22,7 @@ from models.qna_assistant import QnAInstance
 from models.draft_edit_assistant import DraftEditInstance
 from modules import Project
 
-verbose = False
+verbose = True
 
 table_generator_instance = TableGeneratorInstance(verbose=verbose)
 keywords_generator_instance = KeywordsGeneratorInstance(verbose=verbose)
@@ -37,18 +37,18 @@ search_by_url_tool = SearchByURLTool()
 search_tool = SearchTool(search_by_url_tool=search_by_url_tool)
 
 async def main():
-    project = Project(
-        project_id="test_12", 
-        table_generator_instance=table_generator_instance, 
-        keywords_generator_instance=keywords_generator_instance, 
-        draft_generator_instance=draft_generator_instance, 
-        qna_instance=qna_instance,
-        draft_edit_instance=draft_edit_instance,
-        search_tool=search_tool,
-        embed_chain=embedchain
-    )
+    # project = Project(
+    #     project_id="test_15", 
+    #     table_generator_instance=table_generator_instance, 
+    #     keywords_generator_instance=keywords_generator_instance, 
+    #     draft_generator_instance=draft_generator_instance, 
+    #     qna_instance=qna_instance,
+    #     draft_edit_instance=draft_edit_instance,
+    #     search_tool=search_tool,
+    #     embed_chain=embedchain
+    # )
     # start = time.time()
-    purpose = project.set_purpose(purpose="오늘의 점심메뉴는 뭘 먹을까?")
+    # purpose = project.set_purpose(purpose="후쿠시마 오염수 방류")
     # project.save()
     # # 아래는 프로젝트 로드
     # project = Project.load_from_file( 
@@ -90,12 +90,12 @@ async def main():
     #     embed_chain=embedchain,
     #     draft_edit_instance=draft_edit_instance,
     #     user_instance_path='./user/test_9/user_instance.json')
-    user_files = [('/root/OpenAI_SKT/openai_skt/tutorials/test_data/(보도자료) 제20회 전국학생통계활용대회 결과 발표.pdf', 'pdf_file'), ('../../OpenAI_SKT/openai_skt/tutorials/test_data/X2Download.app - 월세=월급, 미친 집값의 나라에서 한국인이 발견한 기회 _ 고투조이 변성민 (128 kbps).mp3', 'audio')]
-    # user_files = [('/root/OpenAI_SKT/openai_skt/tutorials/test_data/(보도자료) 제20회 전국학생통계활용대회 결과 발표.pdf', 'pdf_file')]
-    project.add_files(files=user_files) # 유저가 직접 파일 추가
-    start = time.time()
-    database = project.parse_files_to_embedchain()
-    print('database: ', database, time.time()-start) # 576
+    # user_files = [('/root/OpenAI_SKT/openai_skt/tutorials/test_data/(보도자료) 제20회 전국학생통계활용대회 결과 발표.pdf', 'pdf_file'), ('../../OpenAI_SKT/openai_skt/tutorials/test_data/X2Download.app - 월세=월급, 미친 집값의 나라에서 한국인이 발견한 기회 _ 고투조이 변성민 (128 kbps).mp3', 'audio')]
+    # user_files = [('/home/ubuntu/draft/writer/openai_skt/tutorials/test_data/(국립농산물품질관리원) 농관원  빅데이터 분석？활용 연구 기반 마련  보도자료(2.22. 조간).pdf', 'pdf_file'), ('/home/ubuntu/draft/writer/openai_skt/tutorials/test_data/X2Download.app - 월세=월급, 미친 집값의 나라에서 한국인이 발견한 기회 _ 고투조이 변성민 (128 kbps).mp3', 'audio'), ('https://pytorch.org/get-started/locally/', 'web_page')]
+    # project.add_files(files=user_files) # 유저가 직접 파일 추가
+    # start = time.time()
+    # database = project.parse_files_to_embedchain()
+    # print('database: ', database, time.time()-start) # 576
     # project.save()
     # # 아래는 프로젝트 로드
     # project = Project.load_from_file( 
@@ -109,7 +109,7 @@ async def main():
     #     user_instance_path='./user/test_9/user_instance.json')
     draft = project.get_draft(draft_id=2)
     # print('draft: ', draft, time.time()-start) # 1326
-    project.save()
+    # project.save()
     # 아래는 프로젝트 로드
     # project = Project.load_from_file( 
     #     table_generator_instance=table_generator_instance, 

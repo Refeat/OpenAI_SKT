@@ -25,7 +25,7 @@ from database.database import DataBase
 from modules import Draft
 
 class Project:
-    save_root_path = f"/home/ubuntu/chat_profile/audrey_files/project"
+    save_root_path = f"/home/ubuntu/draft/audrey_files/project"
     def __init__(self, 
                 project_id,
                 table_generator_instance,
@@ -287,7 +287,7 @@ class Project:
         keywords_files = {}
         for keyword in self.keywords:
             api_files = {}
-            result = self.search_tool.search(query=keyword)
+            result = self.search_tool.search(query=keyword, purpose=self.purpose)
             for api_name, infos in result.items():
                 for info in infos:
                     if api_name not in api_files:

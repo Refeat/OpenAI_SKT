@@ -9,7 +9,7 @@ from models.llm import GraphChain
 class GraphTool(BaseTool):
     name = "graph_tool"
     description = """
-A tool to draw a graph. It return image path of the graph. This tool simply converts the data you give it into a graph, so you'll need to enter a table in markdown form with your data and the features of the graph you want to draw. The example of input is as follows:
+A tool to draw a graph. It return image path of the graph. This tool simply converts the data you give it into a graph, so you'll need to enter a table in markdown form with your data and the features of the graph you want to draw. Input data and graph features must be entered in Korean. The example of input is as follows:
 ===
 Please plot the table below as a bar chart.
 | Properties | Information |
@@ -55,5 +55,7 @@ Please plot the table below as a bar chart.
         end_code = result.rfind("```")
         code = result[start_code:end_code].strip() # text of python code
         start_path = result.find('Saved image path: ') + len('Saved image path: ')
-        save_path = result[start_path:].strip() if result[start_path:].strip() != 'No graph' else None
+        end_path = result.rfind("</step4>")
+        # save_path = result[start_path:].strip() if result[start_path:].strip() != 'No graph' else None
+        save_path = result[start_path:end_path].strip() # text of python code
         return code, save_path

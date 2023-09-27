@@ -207,7 +207,7 @@ class CustomEmbedChain(EmbedChain):
             where={'hash':source_id},  # optional filter
         )
         if len(source_id_in_db):
-            print(f"All data from {src} already exists in the database.")
+            # print(f"All data from {src} already exists in the database.")
             # Make sure to return a matching return type
             return [], [], [], 0
 
@@ -231,7 +231,7 @@ class CustomEmbedChain(EmbedChain):
             data_dict = {id: value for id, value in data_dict.items() if id not in existing_ids}
 
             if not data_dict:
-                print(f"All data from {src} already exists in the database.")
+                # print(f"All data from {src} already exists in the database.")
                 # Make sure to return a matching return type
                 return [], [], [], 0
 
@@ -261,7 +261,7 @@ class CustomEmbedChain(EmbedChain):
 
         self.db.add(documents=documents, metadatas=metadatas, ids=ids) # 병목
         count_new_chunks = self.db.count() - chunks_before_addition
-        print((f"Successfully saved {src} ({chunker.data_type}). New chunks count: {count_new_chunks}"))
+        # print((f"Successfully saved {src} ({chunker.data_type}). New chunks count: {count_new_chunks}"))
         return list(documents), metadatas, ids, count_new_chunks
 
     def load_and_embed(
@@ -296,10 +296,9 @@ class CustomEmbedChain(EmbedChain):
             where={'hash':source_id},  # optional filter
         )
         if len(source_id_in_db):
-            print(f"All data from {src} already exists in the database.")
+            # print(f"All data from {src} already exists in the database.")
             # Make sure to return a matching return type
             return [], [], [], 0
-
         embeddings_data = chunker.create_chunks(loader, src) # 병목
         # spread chunking results
         documents = embeddings_data["documents"]
@@ -316,9 +315,8 @@ class CustomEmbedChain(EmbedChain):
         if len(existing_ids):
             data_dict = {id: (doc, meta) for id, doc, meta in zip(ids, documents, metadatas)}
             data_dict = {id: value for id, value in data_dict.items() if id not in existing_ids}
-
             if not data_dict:
-                print(f"All data from {src} already exists in the database.")
+                # print(f"All data from {src} already exists in the database.")
                 # Make sure to return a matching return type
                 return [], [], [], 0
 
@@ -345,7 +343,10 @@ class CustomEmbedChain(EmbedChain):
         metadatas = new_metadatas
         # Count before, to calculate a delta in the end.
         chunks_before_addition = self.db.count()
-        self.db.add(documents=documents, metadatas=metadatas, ids=ids) # 병목
+        try:
+            self.db.add(documents=documents, metadatas=metadatas, ids=ids) # 병목
+        except:
+            return [], [], [], 0
         count_new_chunks = self.db.count() - chunks_before_addition
-        print((f"Successfully saved {src} ({chunker.data_type}). New chunks count: {count_new_chunks}"))
+        # print((f"Successfully saved {src} ({chunker.data_type}). New chunks count: {count_new_chunks}"))
         return list(documents), metadatas, ids, count_new_chunks

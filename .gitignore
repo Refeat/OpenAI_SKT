@@ -21,3 +21,12 @@ openai_skt/database/crawling/koreakr/samples.zip
 openai_skt/database/crawling/koreakr/samples/
 openai_skt/tutorials/Screenshots/
 openai_skt/database/chunk/layout-parser-checkpoint/model_final.pth
+openai_skt/db/
+openai_skt/db_backup_stop_at_75/
+openai_skt/db_backup_stop_at_125/
+openai_skt/db_backup_stop_at_235/
+openai_skt/db_backup_stop_at_364/
+openai_skt/db_backup_stop_at_628/
+openai_skt/db_backup_stop_at_858/
+dbs
+openai_skt.zip

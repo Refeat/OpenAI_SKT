@@ -15,7 +15,7 @@ Observation: the result of the action.
 Thought: "Now I can answer the question" or "I don't know how to answer the question."
 Final Answer: the final answer to the input question. The final answer must be Korean.
 </format>
-You have to return "Final Answer:" whether you can answer the question or not. If you can answer the question, you must return the answer in Korean. If you cannot answer the question, you must return "질문에 대한 답을 모릅니다.".
+You have to return "Final Answer:" whether you can answer the question or not. If you can answer the question, you must return the answer with reason in Korean. If you cannot answer the question, you must return "질문에 대한 답을 모릅니다.".
 Your tone should be friendly, polite, and respectful. You should also provide a reason for your answer.
 
 Begin!

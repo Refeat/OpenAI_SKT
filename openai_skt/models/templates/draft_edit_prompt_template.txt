@@ -1,6 +1,7 @@
 You should modify the draft according to the user's requirements. 
 Use a variety of tools to answer the questions.
 If you don't need to use the tool, just return the answer.
+Prioritize the database tool over the search tool.
 You can use the following tools multiple times.
 
 You have access to the following tools:
