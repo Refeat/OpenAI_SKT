@@ -1,6 +1,9 @@
 import os
 import configparser
 
+import sys
+sys.path.append('./database/chunk/VipsPython/Vips')
+
 from utils import load_api_key
 
 load_api_key()

@@ -12,7 +12,7 @@ from embedchain.helper_classes.json_serializable import register_deserializable
 # from embedchain.loaders.base_loader import BaseLoader
 from embedchain.utils import clean_string
 
-from database.chunk.VipsPython.Vips import Vips
+from database.chunk.VipsPython.Vips.Vips import Vips
 from database.custom_embedchain.loaders.base_loader import BaseLoader
 
 @register_deserializable
@@ -169,7 +169,7 @@ class WebPageLoader(BaseLoader):
         ]
 
     def load_data(self, url):
-        vips = Vips.Vips(urllib.parse.unquote(url, encoding="utf-8"))
+        vips = Vips(urllib.parse.unquote(url, encoding="utf-8"))
         text_groups = vips.parse()
         all_text = ''
         content = []
