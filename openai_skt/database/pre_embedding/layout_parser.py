@@ -11,9 +11,8 @@ current_file_path = os.path.abspath(__file__)
 current_directory = os.path.dirname(current_file_path)
 parent_directory = os.path.dirname(current_directory)
 grandparent_directory = os.path.dirname(parent_directory)
-great_grandparent_directory = os.path.dirname(grandparent_directory)
-config_path = os.path.join(grandparent_directory, "chunk", "layout-parser-checkpoint", "config.yaml")
-model_path = os.path.join(grandparent_directory, "chunk", "layout-parser-checkpoint", "model_final.pth")
+config_path = os.path.join(parent_directory, "chunk", "layout-parser-checkpoint", "config.yaml")
+model_path = os.path.join(parent_directory, "chunk", "layout-parser-checkpoint", "model_final.pth")
 
 from json import JSONEncoder
 
@@ -38,6 +37,7 @@ class LayoutModel:
                        4: "graph", 5: "table", 6: "table_caption", 7: "comment"},
             extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.8]
         )
+        self.domain = None
 
     def load_image(self, image_path):
         image = Image.open(image_path)
@@ -49,8 +49,8 @@ class LayoutModel:
 
     def set_domain(self, domain):
         self.domain = domain
-        self.save_json_root_path = os.path.join(great_grandparent_directory, "data", self.domain, "json")
-        self.save_image_root_path = os.path.join(great_grandparent_directory, "data", self.domain, "image")
+        self.save_json_root_path = os.path.join(grandparent_directory, "data", self.domain, "json")
+        self.save_image_root_path = os.path.join(grandparent_directory, "data", self.domain, "image")
         os.makedirs(self.save_json_root_path, exist_ok=True)
         os.makedirs(self.save_image_root_path, exist_ok=True)
 
@@ -134,6 +134,8 @@ class LayoutModel:
         return image.crop((bbox.x_1, bbox.y_1, bbox.x_2, bbox.y_2))
 
     def __call__(self, data_path:str):
+        if self.domain is None:
+            raise ValueError("domain is not set. Please use set_domain method.")
         if data_path.endswith('pdf'):
             image_list = []
             images = convert_from_path(data_path)
@@ -156,6 +158,7 @@ class LayoutModel:
             image_array = np.array(image)
             layout = self.detect_layout(image_array)
             results = self.post_process(layout)
+            content_list = []
             
             for idx, result in enumerate(results):
                 result["image_path"] = image_path
@@ -170,8 +173,6 @@ class LayoutModel:
                 if result["source_type"] in ["table", "graph", "figure"]:
                     if "comments" not in result:
                         result["comments"] = []
-                    if "comments_image_paths" not in result:
-                        result["comments_image_paths"] = []
                         
                     # Crop and save each comment image
                     if len(result["comments"]) != 0:                        
@@ -199,8 +200,8 @@ class LayoutModel:
                             caption_dict['crop_image_path'] = caption_crop_image_path
                             caption_dict['caption_bbox'] = result["caption"]
                             result["caption"] = caption_dict
-                        
-                json_results["content"].append(result)
+                content_list.append(result)
+            json_results["content"].append(content_list)
 
         json_path = os.path.join(self.save_json_root_path, base_path).replace(".pdf", ".json")
         self.save_json(json_results, json_path)
@@ -217,7 +218,7 @@ if __name__ == "__main__":
     layout_model = LayoutModel()
     layout_model.set_domain("kostat")
     
-    pdf_path = "/root/OpenAI_SKT/openai_skt/database/chunk/layout-parser-checkpoint/(12조간)자동차과, 2022년 10월 자동차산업 동향(잠정).pdf"
-    results = layout_model(pdf_path)
+    image_path = "/root/OpenAI_SKT/openai_skt/database/chunk/layout-parser-checkpoint/(12조간)자동차과, 2022년 10월 자동차산업 동향(잠정).pdf"
+    layout_model(image_path)
 
-    print(results)
+    # print(results)

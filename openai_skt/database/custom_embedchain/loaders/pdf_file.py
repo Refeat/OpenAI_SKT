@@ -7,6 +7,10 @@ from embedchain.helper_classes.json_serializable import register_deserializable
 from embedchain.utils import clean_string
 
 from database.custom_embedchain.loaders.base_loader import BaseLoader
+from database.custom_embedchain.chunkers.new_layout_parser import LayoutModel
+
+layout_model = LayoutModel()
+layout_model.set_domain("others")
 
 @register_deserializable
 class PdfFileLoader(BaseLoader):
@@ -15,22 +19,12 @@ class PdfFileLoader(BaseLoader):
         # loader = PyPDFLoader(url)
         # pages = loader.load_and_split()
         pages = extract_pages(url)
-        images = convert_from_path(url)
+        # images = convert_from_path(url)
+        image_layout_results = layout_model(url)
         # 이미지 변환
         output = []
-        # if not len(pages):
-        #     raise ValueError("No data found")
-        # assert len(pages) == len(images)
-        
-        # only for save kostat and koreakr pdf file
-        # TODO DO
-        import os
-        url = os.path.basename(url)
 
-        for idx, (image, page) in enumerate(zip(images, pages)):
-            # content = page.page_content
-            # content = clean_string(content)
-            # meta_data = page.metadata
+        for idx, (image_layout, page) in enumerate(zip(image_layout_results, pages)):
             meta_data = {}
             meta_data["url"] = url
             meta_data["page"] = idx+1
@@ -39,9 +33,7 @@ class PdfFileLoader(BaseLoader):
                 {
                     "content": page,
                     "meta_data": meta_data,
-                    "image": image, # 각 페이지의 이미지
+                    "image": image_layout, # 각 페이지의 이미지
                 }
             )
-            if idx > 30:
-                return output
         return output

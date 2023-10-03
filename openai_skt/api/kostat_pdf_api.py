@@ -22,11 +22,14 @@ from embedchain.config import (AppConfig, BaseEmbedderConfig, BaseLlmConfig,
 
 ### Init database at global scope - this is to avoid pydantic conflicts
 ### We'll fix this at future
-sys.path.append('/home/ubuntu/draft/writer/openai_skt')
+current_file_path = os.path.abspath(__file__)
+current_directory = os.path.dirname(current_file_path)
+sys.path.append(os.path.join(current_directory, '../../openai_skt'))
+
 ### Set OpenAI key 
 import configparser
 config = configparser.ConfigParser()
-config.read('/home/ubuntu/draft/writer/.secrets.ini')
+config.read(os.path.join(current_directory, '../../.secrets.ini'))
 OPENAI_API_KEY = config['OPENAI']['OPENAI_API_KEY']
 os.environ.update({'OPENAI_API_KEY': OPENAI_API_KEY})
 # Do NOT add data in this API, use only query

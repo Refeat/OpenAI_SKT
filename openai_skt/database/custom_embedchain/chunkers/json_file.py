@@ -1,3 +1,4 @@
+import os
 import re
 import copy
 import time
@@ -12,7 +13,6 @@ import camelot
 from pdfminer.layout import LTTextContainer
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-# from embedchain.chunkers.base_chunker import BaseChunker
 from embedchain.config.AddConfig import ChunkerConfig
 from embedchain.helper_classes.json_serializable import register_deserializable
 
@@ -24,12 +24,10 @@ def inside(center, box):
     bx1, by1, bx2, by2 = box
     return bx1 <= cx <= bx2 and by1 <= cy <= by2
 
-
-# layout_model = None
 clova_ocr_api = ClovaOCRAPI()
 
 @register_deserializable
-class PdfFileChunker(BaseChunker):
+class JsonFileChunker(BaseChunker):
     """Chunker for PDF file."""
 
     def __init__(self, config: Optional[ChunkerConfig] = None):
@@ -56,17 +54,21 @@ class PdfFileChunker(BaseChunker):
         idMap = {}
         datas = loader.load_data(src)
         metadatas = []
+
         for data in datas:
             text_layout = data["content"] # From pdf file
-            image_layout = data["image_layout"] # 이미지 스크린샷
-
+            image_layout = data["image"] # from layout parser
+            
             meta_data = data["meta_data"]
-            meta_data["data_type"] = 'pdf_file'
-            # add data type to meta data to allow query using data type
-            # meta_data["data_type"] = self.data_type.value
+            
             url = meta_data["url"]
             chunks, meta_datas = self.get_chunks(text_layout, image_layout, meta_data)
+            
             for chunk, meta_data in zip(chunks, meta_datas):
+                if meta_data['source_type'] == 'table':
+                    print(chunk, meta_data['data'])
+                elif meta_data['source_type'] == 'image':
+                    print(chunk, meta_data['data'])
                 chunk_id = hashlib.sha256((chunk + url).encode()).hexdigest()
                 if idMap.get(chunk_id) is None:
                     idMap[chunk_id] = True
@@ -204,6 +206,8 @@ class PdfFileChunker(BaseChunker):
             elif image_layout_result['source_type'] == 'figure' or image_layout_result['source_type'] == 'graph':
                 single_meta_data["source_type"] = 'image'
                 crop_image = Image.open(image_layout_result['crop_image_path'])
+                
+                
 
                 single_meta_data["data"] = image_layout_result['crop_image_path']
                 

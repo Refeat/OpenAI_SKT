@@ -13,3 +13,4 @@ class DataType(Enum):
     NOTION = "notion"
     CSV = "csv"
     AUDIO = "audio"
+    JSON = "json_file"

@@ -40,6 +40,7 @@ class CustomEmbedChain(EmbedChain):
         data_type: Optional[DataType] = None,
         metadata: Optional[Dict[str, Any]] = None,
         config: Optional[AddConfig] = None,
+        source_type=None
     ):
         """
         Adds the data from the given URL to the vector db.
@@ -86,20 +87,20 @@ class CustomEmbedChain(EmbedChain):
         hash_object = hashlib.md5(str(source).encode("utf-8"))
         source_id = hash_object.hexdigest()
         data_formatter = DataFormatter(data_type, config)
-        self.user_asks.append([source, data_type.value, metadata])
+        # self.user_asks.append([source, data_type.value, metadata])
         documents, _metadatas, _ids, new_chunks = self.load_and_embed(
-            data_formatter.loader, data_formatter.chunker, source, metadata, source_id
+            data_formatter.loader, data_formatter.chunker, source, metadata, source_id, source_type
         )
         if data_type in {DataType.DOCS_SITE}:
             self.is_docs_site_instance = True
         # Send anonymous telemetry
-        if self.config.collect_metrics:
-            # it's quicker to check the variable twice than to count words when they won't be submitted.
-            word_count = sum([len(document.split(" ")) for document in documents])
+        # if self.config.collect_metrics:
+        #     # it's quicker to check the variable twice than to count words when they won't be submitted.
+        #     word_count = sum([len(document.split(" ")) for document in documents])
 
-            extra_metadata = {"data_type": data_type.value, "word_count": word_count, "chunks_count": new_chunks}
-            thread_telemetry = threading.Thread(target=self._send_telemetry_event, args=("add", extra_metadata))
-            thread_telemetry.start()
+        #     extra_metadata = {"data_type": data_type.value, "word_count": word_count, "chunks_count": new_chunks}
+        #     thread_telemetry = threading.Thread(target=self._send_telemetry_event, args=("add", extra_metadata))
+        #     thread_telemetry.start()
         return source_id
 
     async def async_add(
@@ -271,6 +272,7 @@ class CustomEmbedChain(EmbedChain):
         src: Any,
         metadata: Optional[Dict[str, Any]] = None,
         source_id: Optional[str] = None,
+        source_type=None
     ) -> Tuple[List[str], Dict[str, Any], List[str], int]:
         """The loader to use to load the data.
 
@@ -331,8 +333,9 @@ class CustomEmbedChain(EmbedChain):
 
             # Add hashed source
             m["hash"] = source_id
-            # m["source_type"] = "kostat"
-            # m["source_type"] = "koreakr"
+            if source_type is not None:
+                m["data_source_type"] = source_type
+            # m["data_source_type"] = "koreakr"
 
             # Note: Metadata is the function argument
             if metadata:

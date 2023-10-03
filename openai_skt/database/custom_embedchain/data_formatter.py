@@ -28,6 +28,7 @@ from database.custom_embedchain.loaders.web_page import WebPageLoader
 from database.custom_embedchain.loaders.youtube_video import YoutubeVideoLoader
 from database.custom_embedchain.loaders.audio import AudioLoader
 from database.custom_embedchain.loaders.pdf_file import PdfFileLoader
+from database.custom_embedchain.loaders.json_file import JsonFileLoader
 # from database.custom_embedchain.loaders.docx_file import DocxFileLoader
 from database.custom_embedchain.data_type import DataType
 
@@ -36,6 +37,7 @@ from database.custom_embedchain.chunkers.web_page import WebPageChunker
 from database.custom_embedchain.chunkers.youtube_video import YoutubeVideoChunker
 from database.custom_embedchain.chunkers.audio import AudioChunker
 from database.custom_embedchain.chunkers.pdf_file import PdfFileChunker
+from database.custom_embedchain.chunkers.json_file import JsonFileChunker
 # from database.custom_embedchain.chunkers.docx_file import DocxFileChunker
 
 class DataFormatter(JSONSerializable):
@@ -80,6 +82,7 @@ class DataFormatter(JSONSerializable):
             DataType.DOCS_SITE: DocsSiteLoader,
             DataType.CSV: CsvLoader,
             DataType.AUDIO: AudioLoader,
+            DataType.JSON: JsonFileLoader,
         }
         lazy_loaders = {DataType.NOTION}
         if data_type in loaders:
@@ -118,6 +121,7 @@ class DataFormatter(JSONSerializable):
             DataType.NOTION: NotionChunker,
             DataType.CSV: TableChunker,
             DataType.AUDIO: AudioChunker,
+            DataType.JSON: JsonFileChunker,
         }
         if data_type in chunker_classes:
             chunker_class: type = chunker_classes[data_type]
